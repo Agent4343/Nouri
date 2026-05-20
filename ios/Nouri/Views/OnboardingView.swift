@@ -5,13 +5,22 @@ struct OnboardingView: View {
     @EnvironmentObject var session: Session
     var onFinish: () -> Void
 
+    @AppStorage("nouri.units") private var unitsRaw: String = defaultUnits()
+
     @State private var step = 0
     @State private var age = ""
-    @State private var weight = ""
-    @State private var height = ""
+    @State private var weightKg = ""
+    @State private var heightCm = ""
+    @State private var weightLb = ""
+    @State private var heightFt = ""
+    @State private var heightIn = ""
     @State private var goal = "maintain"
     @State private var target: Int?
     @State private var saving = false
+
+    private var units: Units {
+        get { Units(rawValue: unitsRaw) ?? .metric }
+    }
 
     var body: some View {
         ZStack {
@@ -51,42 +60,77 @@ struct OnboardingView: View {
     }
 
     private var profile: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("A few light details")
-                .font(.title2.weight(.medium))
-            Text("Every field is optional.")
-                .foregroundColor(CalmTheme.muted)
-                .font(.footnote)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("A few light details")
+                    .font(.title2.weight(.medium))
+                Text("Every field is optional.")
+                    .foregroundColor(CalmTheme.muted)
+                    .font(.footnote)
 
-            field("Age", text: $age, keyboard: .numberPad)
-            field("Weight (kg)", text: $weight, keyboard: .decimalPad)
-            field("Height (cm)", text: $height, keyboard: .numberPad)
+                unitsToggle
 
-            Text("Goal").font(.footnote).foregroundColor(CalmTheme.muted)
-            HStack(spacing: 8) {
-                ForEach(["lose", "maintain", "gain"], id: \.self) { g in
-                    Button { goal = g } label: {
-                        Text(g)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
+                field("Age", text: $age, keyboard: .numberPad)
+
+                if units == .metric {
+                    field("Weight (kg)", text: $weightKg, keyboard: .decimalPad)
+                    field("Height (cm)", text: $heightCm, keyboard: .numberPad)
+                } else {
+                    field("Weight (lb)", text: $weightLb, keyboard: .decimalPad)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Height").font(.footnote).foregroundColor(CalmTheme.muted)
+                        HStack(spacing: 8) {
+                            inputBox(placeholder: "ft", text: $heightFt, keyboard: .numberPad)
+                            inputBox(placeholder: "in", text: $heightIn, keyboard: .numberPad)
+                        }
                     }
-                    .background(goal == g ? CalmTheme.sage.opacity(0.15) : .white.opacity(0.7))
-                    .foregroundColor(goal == g ? CalmTheme.ink : CalmTheme.muted)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(goal == g ? CalmTheme.sage : CalmTheme.sand, lineWidth: 1)
-                    )
                 }
+
+                Text("Goal").font(.footnote).foregroundColor(CalmTheme.muted)
+                HStack(spacing: 8) {
+                    ForEach(["lose", "maintain", "gain"], id: \.self) { g in
+                        Button { goal = g } label: {
+                            Text(g)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                        }
+                        .background(goal == g ? CalmTheme.sage.opacity(0.15) : .white.opacity(0.7))
+                        .foregroundColor(goal == g ? CalmTheme.ink : CalmTheme.muted)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(goal == g ? CalmTheme.sage : CalmTheme.sand, lineWidth: 1)
+                        )
+                    }
+                }
+                Button {
+                    Task { await save() }
+                } label: {
+                    Text(saving ? "Saving…" : "Continue")
+                }
+                .buttonStyle(CalmPrimaryButtonStyle())
+                .disabled(saving)
             }
-            Spacer()
-            Button {
-                Task { await save() }
-            } label: {
-                Text(saving ? "Saving…" : "Continue")
+        }
+    }
+
+    private var unitsToggle: some View {
+        HStack(spacing: 8) {
+            ForEach(Units.allCases, id: \.self) { u in
+                Button { unitsRaw = u.rawValue } label: {
+                    Text(u == .metric ? "Metric (kg · cm)" : "Imperial (lb · ft/in)")
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .font(.footnote)
+                }
+                .background(units == u ? CalmTheme.sage.opacity(0.15) : .white.opacity(0.7))
+                .foregroundColor(units == u ? CalmTheme.ink : CalmTheme.muted)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(units == u ? CalmTheme.sage : CalmTheme.sand, lineWidth: 1)
+                )
             }
-            .buttonStyle(CalmPrimaryButtonStyle())
-            .disabled(saving)
         }
     }
 
@@ -108,23 +152,40 @@ struct OnboardingView: View {
     private func field(_ label: String, text: Binding<String>, keyboard: UIKeyboardType) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label).font(.footnote).foregroundColor(CalmTheme.muted)
-            TextField("—", text: text)
-                .keyboardType(keyboard)
-                .padding(.horizontal, 12).padding(.vertical, 10)
-                .background(.white.opacity(0.7))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(CalmTheme.sand, lineWidth: 1))
+            inputBox(placeholder: "—", text: text, keyboard: keyboard)
         }
+    }
+
+    private func inputBox(placeholder: String, text: Binding<String>, keyboard: UIKeyboardType) -> some View {
+        TextField(placeholder, text: text)
+            .keyboardType(keyboard)
+            .padding(.horizontal, 12).padding(.vertical, 10)
+            .background(.white.opacity(0.7))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(CalmTheme.sand, lineWidth: 1))
     }
 
     private func save() async {
         saving = true
         defer { saving = false }
+
+        let weight: Double? = {
+            if units == .metric { return Double(weightKg) }
+            return Double(weightLb).map(UnitConvert.lbToKg)
+        }()
+
+        let height: Double? = {
+            if units == .metric { return Double(heightCm) }
+            let ft = Double(heightFt) ?? 0
+            let inch = Double(heightIn) ?? 0
+            return (ft == 0 && inch == 0) ? nil : UnitConvert.ftInToCm(ft, inch)
+        }()
+
         let body = ProfileIn(
             device_id: session.deviceId,
             age: Int(age),
-            weight_kg: Double(weight),
-            height_cm: Double(height),
+            weight_kg: weight,
+            height_cm: height,
             goal: goal
         )
         do {
@@ -132,8 +193,15 @@ struct OnboardingView: View {
             target = p.calorieTarget
             step = 2
         } catch {
-            // Failure is calm. Still let them move on.
             step = 2
         }
     }
+}
+
+extension Units: CaseIterable {}
+
+private func defaultUnits() -> String {
+    // US locale → imperial, everyone else → metric.
+    let isUS = Locale.current.region?.identifier == "US"
+    return isUS ? Units.imperial.rawValue : Units.metric.rawValue
 }

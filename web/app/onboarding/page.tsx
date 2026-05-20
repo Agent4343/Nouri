@@ -1,28 +1,57 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { getDeviceId, markOnboarded } from "@/lib/device";
+import { getUnits, setUnits, lbToKg, ftInToCm, type Units } from "@/lib/units";
 
 // First 60 Seconds (Story Bible §8). Warm welcome, MVP profile, no shame.
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState<0 | 1 | 2>(0);
-  const [age, setAge] = useState<string>("");
-  const [weight, setWeight] = useState<string>("");
-  const [height, setHeight] = useState<string>("");
-  const [goal, setGoal] = useState<string>("maintain");
+  const [units, setUnitsState] = useState<Units>("metric");
+  const [age, setAge] = useState("");
+  // Metric inputs
+  const [weightKg, setWeightKg] = useState("");
+  const [heightCm, setHeightCm] = useState("");
+  // Imperial inputs
+  const [weightLb, setWeightLb] = useState("");
+  const [heightFt, setHeightFt] = useState("");
+  const [heightIn, setHeightIn] = useState("");
+
+  const [goal, setGoal] = useState("maintain");
   const [target, setTarget] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setUnitsState(getUnits());
+  }, []);
+
+  function chooseUnits(u: Units) {
+    setUnitsState(u);
+    setUnits(u);
+  }
 
   async function save() {
     setSaving(true);
     try {
+      const weight_kg =
+        units === "metric"
+          ? weightKg ? Number(weightKg) : null
+          : weightLb ? lbToKg(Number(weightLb)) : null;
+
+      const height_cm =
+        units === "metric"
+          ? heightCm ? Number(heightCm) : null
+          : (heightFt || heightIn)
+              ? ftInToCm(Number(heightFt || 0), Number(heightIn || 0))
+              : null;
+
       const profile = await api.upsertProfile({
         device_id: getDeviceId(),
         age: age ? Number(age) : null,
-        weight_kg: weight ? Number(weight) : null,
-        height_cm: height ? Number(height) : null,
+        weight_kg,
+        height_cm,
         goal,
       });
       setTarget(profile.calorie_target);
@@ -73,6 +102,21 @@ export default function OnboardingPage() {
           <h2 className="text-xl font-medium">A few light details</h2>
           <p className="mt-1 text-sm text-muted">Every field is optional. Skip what you don't want to share.</p>
         </div>
+
+        <div className="flex gap-2">
+          {(["metric", "imperial"] as const).map((u) => (
+            <button
+              key={u}
+              onClick={() => chooseUnits(u)}
+              className={`flex-1 rounded-xl2 px-3 py-2 text-sm ring-1 ${
+                units === u ? "bg-sage/15 text-ink ring-sage" : "bg-white/70 text-muted ring-sand"
+              }`}
+            >
+              {u === "metric" ? "Metric (kg · cm)" : "Imperial (lb · ft/in)"}
+            </button>
+          ))}
+        </div>
+
         <Field label="Age (optional)">
           <input
             inputMode="numeric"
@@ -82,24 +126,61 @@ export default function OnboardingPage() {
             placeholder="—"
           />
         </Field>
-        <Field label="Weight, kg (optional)">
-          <input
-            inputMode="decimal"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            className="input"
-            placeholder="—"
-          />
-        </Field>
-        <Field label="Height, cm (optional)">
-          <input
-            inputMode="numeric"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
-            className="input"
-            placeholder="—"
-          />
-        </Field>
+
+        {units === "metric" ? (
+          <>
+            <Field label="Weight, kg (optional)">
+              <input
+                inputMode="decimal"
+                value={weightKg}
+                onChange={(e) => setWeightKg(e.target.value)}
+                className="input"
+                placeholder="—"
+              />
+            </Field>
+            <Field label="Height, cm (optional)">
+              <input
+                inputMode="numeric"
+                value={heightCm}
+                onChange={(e) => setHeightCm(e.target.value)}
+                className="input"
+                placeholder="—"
+              />
+            </Field>
+          </>
+        ) : (
+          <>
+            <Field label="Weight, lb (optional)">
+              <input
+                inputMode="decimal"
+                value={weightLb}
+                onChange={(e) => setWeightLb(e.target.value)}
+                className="input"
+                placeholder="—"
+              />
+            </Field>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-sm text-muted">Height (optional)</span>
+              <div className="flex gap-2">
+                <input
+                  inputMode="numeric"
+                  value={heightFt}
+                  onChange={(e) => setHeightFt(e.target.value)}
+                  className="input"
+                  placeholder="ft"
+                />
+                <input
+                  inputMode="numeric"
+                  value={heightIn}
+                  onChange={(e) => setHeightIn(e.target.value)}
+                  className="input"
+                  placeholder="in"
+                />
+              </div>
+            </div>
+          </>
+        )}
+
         <Field label="Goal">
           <div className="flex gap-2">
             {(["lose", "maintain", "gain"] as const).map((g) => (
@@ -115,6 +196,7 @@ export default function OnboardingPage() {
             ))}
           </div>
         </Field>
+
         <button
           onClick={save}
           disabled={saving}
@@ -128,7 +210,7 @@ export default function OnboardingPage() {
             border-radius: 1rem;
             background: rgba(255, 255, 255, 0.7);
             padding: 0.75rem 1rem;
-            box-shadow: inset 0 0 0 1px #f1ebe0;
+            box-shadow: inset 0 0 0 1px #E8DFCF;
             outline: none;
           }
         `}</style>
