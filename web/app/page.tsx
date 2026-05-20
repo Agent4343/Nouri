@@ -24,7 +24,7 @@ export default function HomePage() {
 
   if (error) {
     return (
-      <div className="rounded-xl2 bg-white/80 p-5 ring-1 ring-sand text-sm text-muted">
+      <div className="rounded-xl2 bg-white p-5 ring-1 ring-sand text-sm text-ink">
         Couldn't reach the server. We'll try again next time.
       </div>
     );
@@ -46,7 +46,7 @@ export default function HomePage() {
       </Link>
 
       {summary.meals.length === 0 ? (
-        <div className="rounded-xl2 bg-white/60 p-5 text-sm text-muted ring-1 ring-sand">
+        <div className="rounded-xl2 bg-white p-5 text-sm text-ink ring-1 ring-sand">
           Nothing logged yet. Whenever you're ready.
         </div>
       ) : (

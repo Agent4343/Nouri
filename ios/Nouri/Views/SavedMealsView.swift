@@ -13,7 +13,7 @@ struct SavedMealsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     Text("One tap to log a regular.")
-                        .foregroundColor(CalmTheme.muted)
+                        .foregroundColor(CalmTheme.ink)
                         .font(.footnote)
 
                     if loading && items.isEmpty {
@@ -21,7 +21,7 @@ struct SavedMealsView: View {
                     } else if items.isEmpty {
                         CalmCard {
                             Text("No saved meals yet. Add one below.")
-                                .foregroundColor(CalmTheme.muted)
+                                .foregroundColor(CalmTheme.ink)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     } else {
@@ -30,7 +30,7 @@ struct SavedMealsView: View {
                                 HStack {
                                     VStack(alignment: .leading) {
                                         Text(item.name).foregroundColor(CalmTheme.ink)
-                                        Text("\(item.calories) cal").foregroundColor(CalmTheme.muted).font(.footnote)
+                                        Text("\(item.calories) cal").foregroundColor(CalmTheme.ink).font(.footnote)
                                     }
                                     Spacer()
                                     Button {
@@ -46,7 +46,7 @@ struct SavedMealsView: View {
                                     .buttonStyle(.plain)
                                 }
                                 .padding(14)
-                                .background(.white.opacity(0.8))
+                                .background(Color.white)
                                 .clipShape(RoundedRectangle(cornerRadius: 14))
                                 .overlay(RoundedRectangle(cornerRadius: 14).stroke(CalmTheme.sand, lineWidth: 1))
                             }

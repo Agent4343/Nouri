@@ -29,7 +29,7 @@ struct CorrectView: View {
                         Text(lowConfidence
                              ? "Pick a closer match or fix it below."
                              : "Anything off? One tap away.")
-                            .foregroundColor(CalmTheme.muted)
+                            .foregroundColor(CalmTheme.ink)
                             .font(.footnote)
                     }
                     Spacer()
@@ -47,12 +47,12 @@ struct CorrectView: View {
                                 HStack {
                                     VStack(alignment: .leading) {
                                         Text(alt.label).foregroundColor(CalmTheme.ink)
-                                        Text("\(alt.calories) cal").foregroundColor(CalmTheme.muted).font(.footnote)
+                                        Text("\(alt.calories) cal").foregroundColor(CalmTheme.ink).font(.footnote)
                                     }
                                     Spacer()
                                 }
                                 .padding(14)
-                                .background(.white.opacity(0.8))
+                                .background(Color.white)
                                 .clipShape(RoundedRectangle(cornerRadius: 14))
                                 .overlay(RoundedRectangle(cornerRadius: 14).stroke(CalmTheme.sand, lineWidth: 1))
                             }
@@ -90,7 +90,7 @@ struct CorrectView: View {
                     } label: {
                         Text("Looks right").frame(maxWidth: .infinity).padding(.vertical, 14)
                     }
-                    .background(.white.opacity(0.7))
+                    .background(Color.white)
                     .clipShape(RoundedRectangle(cornerRadius: 18))
                     .overlay(RoundedRectangle(cornerRadius: 18).stroke(CalmTheme.sand, lineWidth: 1))
 

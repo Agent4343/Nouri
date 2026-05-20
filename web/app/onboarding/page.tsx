@@ -71,7 +71,7 @@ export default function OnboardingPage() {
       <section className="flex flex-col gap-6 pt-6">
         <div>
           <h1 className="text-3xl font-medium tracking-tight">Welcome.</h1>
-          <p className="mt-3 text-muted">
+          <p className="mt-3 text-ink">
             This is a calmer way to track. No streaks, no shame, no perfect plan.
             You're tracking. That's the win.
           </p>
@@ -109,7 +109,7 @@ export default function OnboardingPage() {
               key={u}
               onClick={() => chooseUnits(u)}
               className={`flex-1 rounded-xl2 px-3 py-2 text-sm ring-1 ${
-                units === u ? "bg-sage/15 text-ink ring-sage" : "bg-white/70 text-muted ring-sand"
+                units === u ? "bg-sage/15 text-ink ring-sage" : "bg-white text-muted ring-sand"
               }`}
             >
               {u === "metric" ? "Metric (kg · cm)" : "Imperial (lb · ft/in)"}
@@ -188,7 +188,7 @@ export default function OnboardingPage() {
                 key={g}
                 onClick={() => setGoal(g)}
                 className={`flex-1 rounded-xl2 px-3 py-2 text-sm ring-1 ${
-                  goal === g ? "bg-sage/15 text-ink ring-sage" : "bg-white/70 text-muted ring-sand"
+                  goal === g ? "bg-sage/15 text-ink ring-sage" : "bg-white text-muted ring-sand"
                 }`}
               >
                 {g}
@@ -208,9 +208,10 @@ export default function OnboardingPage() {
           .input {
             width: 100%;
             border-radius: 1rem;
-            background: rgba(255, 255, 255, 0.7);
+            background: #FFFFFF;
             padding: 0.75rem 1rem;
-            box-shadow: inset 0 0 0 1px #E8DFCF;
+            color: #0F0D0B;
+            box-shadow: inset 0 0 0 1px #DDD1BB;
             outline: none;
           }
         `}</style>
@@ -222,7 +223,7 @@ export default function OnboardingPage() {
     <section className="flex flex-col gap-6 pt-6">
       <div>
         <h2 className="text-xl font-medium">A rough number to start</h2>
-        <p className="mt-2 text-muted">
+        <p className="mt-2 text-ink">
           {target
             ? `Here's a rough target: ~${target} cal a day. We'll adjust as we learn.`
             : "No target yet — that's fine. You can track without one."}

@@ -47,22 +47,22 @@ export default function SavedPage() {
     <section className="flex flex-col gap-5 pt-2">
       <div>
         <h2 className="text-xl font-medium">Saved meals</h2>
-        <p className="mt-1 text-sm text-muted">One tap to log a regular.</p>
+        <p className="mt-1 text-sm text-ink">One tap to log a regular.</p>
       </div>
 
       {items === null ? (
         <div className="text-sm text-muted">Loading…</div>
       ) : items.length === 0 ? (
-        <div className="rounded-xl2 bg-white/70 p-5 text-sm text-muted ring-1 ring-sand">
+        <div className="rounded-xl2 bg-white p-5 text-sm text-ink ring-1 ring-sand">
           No saved meals yet. Add one below.
         </div>
       ) : (
         <div className="flex flex-col gap-2">
           {items.map((s) => (
-            <div key={s.id} className="flex items-center justify-between rounded-xl2 bg-white/80 px-4 py-3 ring-1 ring-sand">
+            <div key={s.id} className="flex items-center justify-between rounded-xl2 bg-white px-4 py-3 ring-1 ring-sand">
               <div>
                 <div className="text-ink">{s.name}</div>
-                <div className="text-sm text-muted">{s.calories} cal</div>
+                <div className="text-sm text-ink">{s.calories} cal</div>
               </div>
               <button
                 onClick={() => logAgain(s.id)}
@@ -75,7 +75,7 @@ export default function SavedPage() {
         </div>
       )}
 
-      <div className="rounded-xl2 bg-white/80 p-4 ring-1 ring-sand">
+      <div className="rounded-xl2 bg-white p-4 ring-1 ring-sand">
         <div className="text-sm text-muted">Add a saved meal</div>
         <div className="mt-3 flex flex-col gap-2">
           <input

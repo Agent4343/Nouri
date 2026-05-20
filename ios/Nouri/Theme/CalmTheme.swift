@@ -3,12 +3,12 @@ import SwiftUI
 // Calm palette per Story Bible §9. Soft, generous, quiet — but still legible.
 enum CalmTheme {
     static let cream = Color(red: 0.980, green: 0.969, blue: 0.949)   // #FAF7F2
-    static let sand  = Color(red: 0.910, green: 0.875, blue: 0.812)   // #E8DFCF
-    static let ink   = Color(red: 0.122, green: 0.106, blue: 0.090)   // #1F1B17
-    static let muted = Color(red: 0.290, green: 0.271, blue: 0.251)   // #4A4540
-    static let sage  = Color(red: 0.373, green: 0.502, blue: 0.376)   // #5F8060
-    static let sageDark = Color(red: 0.263, green: 0.380, blue: 0.282) // #436148
-    static let warmth = Color(red: 0.690, green: 0.478, blue: 0.290)  // #B07A4A
+    static let sand  = Color(red: 0.867, green: 0.820, blue: 0.733)   // #DDD1BB
+    static let ink   = Color(red: 0.059, green: 0.051, blue: 0.043)   // #0F0D0B
+    static let muted = Color(red: 0.169, green: 0.153, blue: 0.133)   // #2B2722
+    static let sage  = Color(red: 0.290, green: 0.420, blue: 0.298)   // #4A6B4C
+    static let sageDark = Color(red: 0.204, green: 0.314, blue: 0.216) // #345037
+    static let warmth = Color(red: 0.580, green: 0.376, blue: 0.200)  // #946033
 }
 
 struct CalmCard<Content: View>: View {
@@ -17,7 +17,7 @@ struct CalmCard<Content: View>: View {
     var body: some View {
         content
             .padding(16)
-            .background(.white.opacity(0.8))
+            .background(Color.white)
             .overlay(
                 RoundedRectangle(cornerRadius: 18)
                     .stroke(CalmTheme.sand, lineWidth: 1)

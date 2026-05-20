@@ -5,7 +5,7 @@ export function DailyTotal({ summary }: { summary: TodaySummary }) {
   // No red. No alarm bars. Soft fill, capped at 100% visually (§9).
   const pct = target_calories ? Math.min(100, Math.round((total_calories / target_calories) * 100)) : 0;
   return (
-    <section className="rounded-xl2 bg-white/80 p-5 shadow-sm ring-1 ring-sand">
+    <section className="rounded-xl2 bg-white p-5 shadow-sm ring-1 ring-sand">
       <div className="flex items-end justify-between">
         <div>
           <div className="text-sm text-muted">Today</div>
@@ -22,7 +22,7 @@ export function DailyTotal({ summary }: { summary: TodaySummary }) {
           <div className="h-full rounded-full bg-sage transition-all" style={{ width: `${pct}%` }} />
         </div>
       )}
-      <p className="mt-4 text-sm text-muted">{message}</p>
+      <p className="mt-4 text-sm text-ink">{message}</p>
     </section>
   );
 }

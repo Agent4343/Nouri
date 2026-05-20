@@ -9,7 +9,7 @@ struct MealRow: View {
                 Text(meal.label).foregroundColor(CalmTheme.ink)
                 Text("\(meal.calories) cal · \(Int(meal.proteinG))p / \(Int(meal.carbsG))c / \(Int(meal.fatG))f")
                     .font(.footnote)
-                    .foregroundColor(CalmTheme.muted)
+                    .foregroundColor(CalmTheme.ink)
                 Text(meal.loggedAt.formatted(date: .omitted, time: .shortened)
                      + (meal.corrected ? " · corrected" : ""))
                     .font(.caption2)
@@ -21,7 +21,7 @@ struct MealRow: View {
             }
         }
         .padding(14)
-        .background(.white.opacity(0.8))
+        .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(CalmTheme.sand, lineWidth: 1))
     }

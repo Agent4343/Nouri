@@ -64,7 +64,7 @@ export default function CorrectPage() {
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-xl font-medium">{fresh ? "Looks like…" : "Edit meal"}</h2>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 text-sm text-ink">
             {lowConfidence
               ? "We're not confident on this one yet. Pick a closer match or fix it below."
               : "Anything off? One tap away."}
@@ -79,16 +79,16 @@ export default function CorrectPage() {
             <button
               key={alt.label}
               onClick={() => pickAlternative(alt)}
-              className="rounded-xl2 bg-white/80 px-4 py-3 text-left ring-1 ring-sand hover:bg-white"
+              className="rounded-xl2 bg-white px-4 py-3 text-left ring-1 ring-sand hover:bg-white"
             >
               <div className="text-ink">{alt.label}</div>
-              <div className="text-sm text-muted">{alt.calories} cal</div>
+              <div className="text-sm text-ink">{alt.calories} cal</div>
             </button>
           ))}
         </div>
       )}
 
-      <div className="flex flex-col gap-3 rounded-xl2 bg-white/80 p-4 ring-1 ring-sand">
+      <div className="flex flex-col gap-3 rounded-xl2 bg-white p-4 ring-1 ring-sand">
         <label className="flex flex-col gap-1.5">
           <span className="text-sm text-muted">What was it?</span>
           <input
@@ -111,7 +111,7 @@ export default function CorrectPage() {
       <div className="flex gap-3">
         <button
           onClick={() => router.replace("/")}
-          className="flex-1 rounded-xl2 bg-white/70 px-5 py-4 ring-1 ring-sand hover:bg-white"
+          className="flex-1 rounded-xl2 bg-white px-5 py-4 ring-1 ring-sand hover:bg-white"
         >
           Looks right
         </button>

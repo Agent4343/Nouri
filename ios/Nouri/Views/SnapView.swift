@@ -13,14 +13,14 @@ struct SnapView: View {
             VStack(alignment: .leading, spacing: 20) {
                 Text("Snap a meal").font(.title2.weight(.medium))
                 Text("Real camera upload comes next. For now, give it a hint — or just tap to log a quick estimate.")
-                    .foregroundColor(CalmTheme.muted)
+                    .foregroundColor(CalmTheme.ink)
                     .font(.footnote)
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text("What is it? (optional)").font(.footnote).foregroundColor(CalmTheme.muted)
                     TextField("e.g. chicken bowl", text: $hint)
                         .padding(.horizontal, 12).padding(.vertical, 10)
-                        .background(.white.opacity(0.7))
+                        .background(Color.white)
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                         .overlay(RoundedRectangle(cornerRadius: 14).stroke(CalmTheme.sand, lineWidth: 1))
                 }

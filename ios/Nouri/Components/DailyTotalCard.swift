@@ -40,7 +40,7 @@ struct DailyTotalCard: View {
                 }
 
                 Text(summary.message)
-                    .foregroundColor(CalmTheme.muted)
+                    .foregroundColor(CalmTheme.ink)
                     .font(.footnote)
             }
         }

@@ -33,7 +33,7 @@ export default function SnapPage() {
     <section className="flex flex-col gap-5 pt-2">
       <div>
         <h2 className="text-xl font-medium">Snap a meal</h2>
-        <p className="mt-1 text-sm text-muted">
+        <p className="mt-1 text-sm text-ink">
           Real camera upload comes next. For now, give it a hint — or just tap to log a quick estimate.
         </p>
       </div>
@@ -44,7 +44,7 @@ export default function SnapPage() {
           value={hint}
           onChange={(e) => setHint(e.target.value)}
           placeholder="e.g. chicken bowl"
-          className="rounded-xl2 bg-white/70 px-4 py-3 ring-1 ring-sand outline-none"
+          className="rounded-xl2 bg-white px-4 py-3 ring-1 ring-sand outline-none"
         />
       </label>
 
@@ -57,7 +57,7 @@ export default function SnapPage() {
       </button>
 
       {err && (
-        <p className="text-sm text-muted">Couldn't reach the server. Try again in a moment.</p>
+        <p className="text-sm text-ink">Couldn't reach the server. Try again in a moment.</p>
       )}
     </section>
   );

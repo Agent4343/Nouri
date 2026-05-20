@@ -44,7 +44,7 @@ struct OnboardingView: View {
                 .font(.system(size: 34, weight: .medium))
                 .foregroundColor(CalmTheme.ink)
             Text("This is a calmer way to track. No streaks, no shame, no perfect plan. You're tracking. That's the win.")
-                .foregroundColor(CalmTheme.muted)
+                .foregroundColor(CalmTheme.ink)
             Spacer()
             Button { step = 1 } label: { Text("Let's start") }
                 .buttonStyle(CalmPrimaryButtonStyle())
@@ -94,7 +94,7 @@ struct OnboardingView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 10)
                         }
-                        .background(goal == g ? CalmTheme.sage.opacity(0.15) : .white.opacity(0.7))
+                        .background(goal == g ? CalmTheme.sage.opacity(0.15) : Color.white)
                         .foregroundColor(goal == g ? CalmTheme.ink : CalmTheme.muted)
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                         .overlay(
@@ -123,7 +123,7 @@ struct OnboardingView: View {
                         .padding(.vertical, 10)
                         .font(.footnote)
                 }
-                .background(units == u ? CalmTheme.sage.opacity(0.15) : .white.opacity(0.7))
+                .background(units == u ? CalmTheme.sage.opacity(0.15) : Color.white)
                 .foregroundColor(units == u ? CalmTheme.ink : CalmTheme.muted)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
                 .overlay(
@@ -140,7 +140,7 @@ struct OnboardingView: View {
                 .font(.title2.weight(.medium))
             Text(target.map { "Here's a rough target: ~\($0) cal a day. We'll adjust as we learn." }
                  ?? "No target yet — that's fine. You can track without one.")
-                .foregroundColor(CalmTheme.muted)
+                .foregroundColor(CalmTheme.ink)
             Spacer()
             Button {
                 onFinish()
@@ -160,7 +160,7 @@ struct OnboardingView: View {
         TextField(placeholder, text: text)
             .keyboardType(keyboard)
             .padding(.horizontal, 12).padding(.vertical, 10)
-            .background(.white.opacity(0.7))
+            .background(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(CalmTheme.sand, lineWidth: 1))
     }

@@ -7,12 +7,12 @@ const config: Config = {
     extend: {
       colors: {
         cream: "#FAF7F2",
-        sand: "#E8DFCF",
-        ink: "#1F1B17",
-        muted: "#4A4540",
-        sage: "#5F8060",
-        sageDark: "#436148",
-        warmth: "#B07A4A",
+        sand: "#DDD1BB",
+        ink: "#0F0D0B",
+        muted: "#2B2722",
+        sage: "#4A6B4C",
+        sageDark: "#345037",
+        warmth: "#946033",
       },
       fontFamily: {
         sans: ["ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica", "Arial"],
