@@ -1,3 +1,4 @@
+import logging
 from collections.abc import AsyncIterator
 from datetime import datetime
 from uuid import UUID, uuid4
@@ -10,8 +11,21 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from app.config import settings
 
 
-engine = create_async_engine(settings.async_database_url, echo=False, future=True)
-SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+log = logging.getLogger("nouri.db")
+
+
+# Engine creation is wrapped so a malformed DATABASE_URL doesn't crash the whole
+# module at import time — which would prevent uvicorn from ever binding the port
+# and leave the healthcheck timing out with no actionable log line. If creation
+# fails, requests that need the DB will fail individually, but /health stays up
+# and the cause is logged loudly.
+try:
+    engine = create_async_engine(settings.async_database_url, echo=False, future=True)
+    SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
+except Exception as e:
+    log.error("failed to create async engine for url=%r: %s", settings.async_database_url, e)
+    engine = None  # type: ignore[assignment]
+    SessionLocal = None  # type: ignore[assignment]
 
 
 class Base(DeclarativeBase):
@@ -65,10 +79,14 @@ class SavedMeal(Base):
 
 
 async def init_db() -> None:
+    if engine is None:
+        raise RuntimeError("engine is not configured (check DATABASE_URL)")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:
+    if SessionLocal is None:
+        raise RuntimeError("database not configured")
     async with SessionLocal() as session:
         yield session
