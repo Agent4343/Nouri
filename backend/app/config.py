@@ -10,7 +10,9 @@ class Settings(BaseSettings):
 
     @property
     def async_database_url(self) -> str:
-        url = self.database_url
+        # Strip whitespace — copy-paste in Railway's web UI can sneak in a
+        # trailing newline, which Postgres then sees as part of the db name.
+        url = self.database_url.strip()
         if url.startswith("postgres://"):
             url = "postgresql+asyncpg://" + url[len("postgres://"):]
         elif url.startswith("postgresql://") and "+asyncpg" not in url:
