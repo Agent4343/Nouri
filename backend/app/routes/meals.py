@@ -1,0 +1,113 @@
+from datetime import datetime, time, timedelta
+from uuid import UUID, uuid4
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.copy import daily_message
+from app.db import Meal, Profile, get_session
+from app.schemas import (
+    MealAlternative,
+    MealCorrection,
+    MealIn,
+    MealOut,
+    TodaySummary,
+)
+from app.vision import guess
+
+router = APIRouter()
+
+
+def _to_out(meal: Meal, alternatives: list[MealAlternative] | None = None) -> MealOut:
+    return MealOut(
+        id=meal.id,
+        device_id=meal.device_id,
+        label=meal.label,
+        calories=meal.calories,
+        protein_g=meal.protein_g,
+        carbs_g=meal.carbs_g,
+        fat_g=meal.fat_g,
+        confidence=meal.confidence,
+        photo_url=meal.photo_url,
+        source=meal.source,
+        corrected=meal.corrected,
+        logged_at=meal.logged_at,
+        alternatives=alternatives or [],
+    )
+
+
+@router.post("", response_model=MealOut)
+async def log_meal(body: MealIn, db: AsyncSession = Depends(get_session)) -> MealOut:
+    g = guess(seed=body.photo_url, hint=body.hint)
+    meal = Meal(
+        id=uuid4(),
+        device_id=body.device_id,
+        label=g.label,
+        calories=g.calories,
+        protein_g=g.protein_g,
+        carbs_g=g.carbs_g,
+        fat_g=g.fat_g,
+        confidence=g.confidence,
+        photo_url=body.photo_url,
+        source="photo",
+    )
+    db.add(meal)
+    await db.commit()
+    await db.refresh(meal)
+    alternatives = [MealAlternative(label=lbl, calories=cal) for lbl, cal in g.alternatives]
+    return _to_out(meal, alternatives)
+
+
+@router.patch("/{meal_id}", response_model=MealOut)
+async def quick_correct(
+    meal_id: UUID,
+    body: MealCorrection,
+    db: AsyncSession = Depends(get_session),
+) -> MealOut:
+    meal = await db.get(Meal, meal_id)
+    if meal is None:
+        raise HTTPException(404, "meal not found")
+    if body.label is not None:
+        meal.label = body.label
+    if body.calories is not None:
+        meal.calories = body.calories
+    if body.protein_g is not None:
+        meal.protein_g = body.protein_g
+    if body.carbs_g is not None:
+        meal.carbs_g = body.carbs_g
+    if body.fat_g is not None:
+        meal.fat_g = body.fat_g
+    meal.corrected = True
+    meal.confidence = 1.0  # user has spoken
+    await db.commit()
+    await db.refresh(meal)
+    return _to_out(meal)
+
+
+@router.get("/today", response_model=TodaySummary)
+async def today(device_id: UUID, db: AsyncSession = Depends(get_session)) -> TodaySummary:
+    start = datetime.combine(datetime.utcnow().date(), time.min)
+    end = start + timedelta(days=1)
+    stmt = (
+        select(Meal)
+        .where(Meal.device_id == device_id, Meal.logged_at >= start, Meal.logged_at < end)
+        .order_by(Meal.logged_at.desc())
+    )
+    rows = (await db.scalars(stmt)).all()
+    profile = await db.get(Profile, device_id)
+    target = profile.calorie_target if profile else None
+    total_cal = sum(m.calories for m in rows)
+    total_p = sum(m.protein_g for m in rows)
+    total_c = sum(m.carbs_g for m in rows)
+    total_f = sum(m.fat_g for m in rows)
+    return TodaySummary(
+        device_id=device_id,
+        total_calories=total_cal,
+        total_protein_g=round(total_p, 1),
+        total_carbs_g=round(total_c, 1),
+        total_fat_g=round(total_f, 1),
+        target_calories=target,
+        meals=[_to_out(m) for m in rows],
+        message=daily_message(total_cal, target),
+    )

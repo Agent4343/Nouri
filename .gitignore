@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.env
+.env.local
+*.sqlite*
+
+# Node / Next
+node_modules/
+.next/
+out/
+tsconfig.tsbuildinfo
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+
+# Xcode / Swift (project is generated locally; only source is tracked)
+*.xcodeproj/
+*.xcworkspace/
+*.xcuserdatad/
+build/
+DerivedData/
+Pods/
+
+# Editor
+.idea/
+.vscode/
+*.swp
