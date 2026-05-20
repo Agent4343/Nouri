@@ -52,7 +52,7 @@ struct CorrectView: View {
                                     Spacer()
                                 }
                                 .padding(14)
-                                .background(Color.white)
+                                .background(CalmTheme.card)
                                 .clipShape(RoundedRectangle(cornerRadius: 14))
                                 .overlay(RoundedRectangle(cornerRadius: 14).stroke(CalmTheme.sand, lineWidth: 1))
                             }
@@ -90,7 +90,7 @@ struct CorrectView: View {
                     } label: {
                         Text("Looks right").frame(maxWidth: .infinity).padding(.vertical, 14)
                     }
-                    .background(Color.white)
+                    .background(CalmTheme.card)
                     .clipShape(RoundedRectangle(cornerRadius: 18))
                     .overlay(RoundedRectangle(cornerRadius: 18).stroke(CalmTheme.sand, lineWidth: 1))
 

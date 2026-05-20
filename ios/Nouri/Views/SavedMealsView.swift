@@ -39,14 +39,14 @@ struct SavedMealsView: View {
                                         Text("Log again")
                                             .font(.footnote)
                                             .padding(.horizontal, 12).padding(.vertical, 6)
-                                            .background(CalmTheme.sage.opacity(0.15))
-                                            .foregroundColor(CalmTheme.sageDark)
+                                            .background(CalmTheme.sage.opacity(0.20))
+                                            .foregroundColor(CalmTheme.sage)
                                             .clipShape(Capsule())
                                     }
                                     .buttonStyle(.plain)
                                 }
                                 .padding(14)
-                                .background(Color.white)
+                                .background(CalmTheme.card)
                                 .clipShape(RoundedRectangle(cornerRadius: 14))
                                 .overlay(RoundedRectangle(cornerRadius: 14).stroke(CalmTheme.sand, lineWidth: 1))
                             }

@@ -20,7 +20,7 @@ struct SnapView: View {
                     Text("What is it? (optional)").font(.footnote).foregroundColor(CalmTheme.muted)
                     TextField("e.g. chicken bowl", text: $hint)
                         .padding(.horizontal, 12).padding(.vertical, 10)
-                        .background(Color.white)
+                        .background(CalmTheme.card)
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                         .overlay(RoundedRectangle(cornerRadius: 14).stroke(CalmTheme.sand, lineWidth: 1))
                 }

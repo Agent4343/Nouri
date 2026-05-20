@@ -78,7 +78,7 @@ export default function OnboardingPage() {
         </div>
         <button
           onClick={() => setStep(1)}
-          className="rounded-xl2 bg-sage px-5 py-4 text-white shadow-sm hover:bg-sageDark"
+          className="rounded-xl2 bg-sage px-5 py-4 text-cream shadow-sm hover:bg-sageDark"
         >
           Let's start
         </button>
@@ -109,7 +109,7 @@ export default function OnboardingPage() {
               key={u}
               onClick={() => chooseUnits(u)}
               className={`flex-1 rounded-xl2 px-3 py-2 text-sm ring-1 ${
-                units === u ? "bg-sage/15 text-ink ring-sage" : "bg-white text-muted ring-sand"
+                units === u ? "bg-sage/15 text-ink ring-sage" : "bg-card text-muted ring-sand"
               }`}
             >
               {u === "metric" ? "Metric (kg · cm)" : "Imperial (lb · ft/in)"}
@@ -188,7 +188,7 @@ export default function OnboardingPage() {
                 key={g}
                 onClick={() => setGoal(g)}
                 className={`flex-1 rounded-xl2 px-3 py-2 text-sm ring-1 ${
-                  goal === g ? "bg-sage/15 text-ink ring-sage" : "bg-white text-muted ring-sand"
+                  goal === g ? "bg-sage/15 text-ink ring-sage" : "bg-card text-muted ring-sand"
                 }`}
               >
                 {g}
@@ -200,7 +200,7 @@ export default function OnboardingPage() {
         <button
           onClick={save}
           disabled={saving}
-          className="mt-2 rounded-xl2 bg-sage px-5 py-4 text-white shadow-sm hover:bg-sageDark disabled:opacity-60"
+          className="mt-2 rounded-xl2 bg-sage px-5 py-4 text-cream shadow-sm hover:bg-sageDark disabled:opacity-60"
         >
           {saving ? "Saving…" : "Continue"}
         </button>
@@ -208,10 +208,10 @@ export default function OnboardingPage() {
           .input {
             width: 100%;
             border-radius: 1rem;
-            background: #FFFFFF;
+            background: #1A1714;
             padding: 0.75rem 1rem;
-            color: #0F0D0B;
-            box-shadow: inset 0 0 0 1px #DDD1BB;
+            color: #F5EFE5;
+            box-shadow: inset 0 0 0 1px #3A322B;
             outline: none;
           }
         `}</style>
@@ -229,7 +229,7 @@ export default function OnboardingPage() {
             : "No target yet — that's fine. You can track without one."}
         </p>
       </div>
-      <button onClick={finish} className="rounded-xl2 bg-sage px-5 py-4 text-white shadow-sm hover:bg-sageDark">
+      <button onClick={finish} className="rounded-xl2 bg-sage px-5 py-4 text-cream shadow-sm hover:bg-sageDark">
         Snap your first meal
       </button>
     </section>

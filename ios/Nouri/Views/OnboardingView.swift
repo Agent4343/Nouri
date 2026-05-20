@@ -94,7 +94,7 @@ struct OnboardingView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 10)
                         }
-                        .background(goal == g ? CalmTheme.sage.opacity(0.15) : Color.white)
+                        .background(goal == g ? CalmTheme.sage.opacity(0.15) : CalmTheme.card)
                         .foregroundColor(goal == g ? CalmTheme.ink : CalmTheme.muted)
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                         .overlay(
@@ -123,7 +123,7 @@ struct OnboardingView: View {
                         .padding(.vertical, 10)
                         .font(.footnote)
                 }
-                .background(units == u ? CalmTheme.sage.opacity(0.15) : Color.white)
+                .background(units == u ? CalmTheme.sage.opacity(0.15) : CalmTheme.card)
                 .foregroundColor(units == u ? CalmTheme.ink : CalmTheme.muted)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
                 .overlay(
@@ -160,7 +160,7 @@ struct OnboardingView: View {
         TextField(placeholder, text: text)
             .keyboardType(keyboard)
             .padding(.horizontal, 12).padding(.vertical, 10)
-            .background(Color.white)
+            .background(CalmTheme.card)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(CalmTheme.sand, lineWidth: 1))
     }

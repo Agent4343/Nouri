@@ -10,13 +10,14 @@ struct ConfidenceBadge: View {
         return "Not sure yet"
     }
     private var background: Color {
-        if value >= 0.8 { return CalmTheme.sage.opacity(0.15) }
-        if value >= 0.65 { return CalmTheme.warmth.opacity(0.15) }
+        if value >= 0.8 { return CalmTheme.sage.opacity(0.25) }
+        if value >= 0.65 { return CalmTheme.warmth.opacity(0.25) }
         return CalmTheme.sand
     }
     private var foreground: Color {
-        if value >= 0.8 { return CalmTheme.sageDark }
-        return CalmTheme.muted
+        if value >= 0.8 { return CalmTheme.sage }
+        if value >= 0.65 { return CalmTheme.warmth }
+        return CalmTheme.ink
     }
 
     var body: some View {

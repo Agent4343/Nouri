@@ -44,14 +44,14 @@ export default function SnapPage() {
           value={hint}
           onChange={(e) => setHint(e.target.value)}
           placeholder="e.g. chicken bowl"
-          className="rounded-xl2 bg-white px-4 py-3 ring-1 ring-sand outline-none"
+          className="rounded-xl2 bg-card px-4 py-3 ring-1 ring-sand outline-none"
         />
       </label>
 
       <button
         onClick={snap}
         disabled={loading}
-        className="rounded-xl2 bg-sage px-5 py-4 text-white shadow-sm hover:bg-sageDark disabled:opacity-60"
+        className="rounded-xl2 bg-sage px-5 py-4 text-cream shadow-sm hover:bg-sageDark disabled:opacity-60"
       >
         {loading ? "Estimating…" : "Log it"}
       </button>

@@ -21,7 +21,7 @@ struct MealRow: View {
             }
         }
         .padding(14)
-        .background(Color.white)
+        .background(CalmTheme.card)
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(CalmTheme.sand, lineWidth: 1))
     }

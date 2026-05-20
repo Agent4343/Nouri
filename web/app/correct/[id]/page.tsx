@@ -79,7 +79,7 @@ export default function CorrectPage() {
             <button
               key={alt.label}
               onClick={() => pickAlternative(alt)}
-              className="rounded-xl2 bg-white px-4 py-3 text-left ring-1 ring-sand hover:bg-white"
+              className="rounded-xl2 bg-card px-4 py-3 text-left ring-1 ring-sand hover:bg-card"
             >
               <div className="text-ink">{alt.label}</div>
               <div className="text-sm text-ink">{alt.calories} cal</div>
@@ -88,7 +88,7 @@ export default function CorrectPage() {
         </div>
       )}
 
-      <div className="flex flex-col gap-3 rounded-xl2 bg-white p-4 ring-1 ring-sand">
+      <div className="flex flex-col gap-3 rounded-xl2 bg-card p-4 ring-1 ring-sand">
         <label className="flex flex-col gap-1.5">
           <span className="text-sm text-muted">What was it?</span>
           <input
@@ -111,14 +111,14 @@ export default function CorrectPage() {
       <div className="flex gap-3">
         <button
           onClick={() => router.replace("/")}
-          className="flex-1 rounded-xl2 bg-white px-5 py-4 ring-1 ring-sand hover:bg-white"
+          className="flex-1 rounded-xl2 bg-card px-5 py-4 ring-1 ring-sand hover:bg-card"
         >
           Looks right
         </button>
         <button
           onClick={save}
           disabled={saving}
-          className="flex-1 rounded-xl2 bg-sage px-5 py-4 text-white shadow-sm hover:bg-sageDark disabled:opacity-60"
+          className="flex-1 rounded-xl2 bg-sage px-5 py-4 text-cream shadow-sm hover:bg-sageDark disabled:opacity-60"
         >
           {saving ? "Saving…" : "Save fix"}
         </button>

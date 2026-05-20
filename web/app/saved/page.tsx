@@ -53,20 +53,20 @@ export default function SavedPage() {
       {items === null ? (
         <div className="text-sm text-muted">Loading…</div>
       ) : items.length === 0 ? (
-        <div className="rounded-xl2 bg-white p-5 text-sm text-ink ring-1 ring-sand">
+        <div className="rounded-xl2 bg-card p-5 text-sm text-ink ring-1 ring-sand">
           No saved meals yet. Add one below.
         </div>
       ) : (
         <div className="flex flex-col gap-2">
           {items.map((s) => (
-            <div key={s.id} className="flex items-center justify-between rounded-xl2 bg-white px-4 py-3 ring-1 ring-sand">
+            <div key={s.id} className="flex items-center justify-between rounded-xl2 bg-card px-4 py-3 ring-1 ring-sand">
               <div>
                 <div className="text-ink">{s.name}</div>
                 <div className="text-sm text-ink">{s.calories} cal</div>
               </div>
               <button
                 onClick={() => logAgain(s.id)}
-                className="rounded-full bg-sage/15 px-3 py-1.5 text-sm text-sageDark hover:bg-sage/25"
+                className="rounded-full bg-sage/20 px-3 py-1.5 text-sm text-sage hover:bg-sage/30"
               >
                 Log again
               </button>
@@ -75,7 +75,7 @@ export default function SavedPage() {
         </div>
       )}
 
-      <div className="rounded-xl2 bg-white p-4 ring-1 ring-sand">
+      <div className="rounded-xl2 bg-card p-4 ring-1 ring-sand">
         <div className="text-sm text-muted">Add a saved meal</div>
         <div className="mt-3 flex flex-col gap-2">
           <input
@@ -94,7 +94,7 @@ export default function SavedPage() {
           <button
             onClick={create}
             disabled={saving || !name || !cal}
-            className="mt-1 rounded-xl2 bg-sage px-5 py-3 text-white shadow-sm hover:bg-sageDark disabled:opacity-60"
+            className="mt-1 rounded-xl2 bg-sage px-5 py-3 text-cream shadow-sm hover:bg-sageDark disabled:opacity-60"
           >
             {saving ? "Saving…" : "Save"}
           </button>

@@ -1,14 +1,16 @@
 import SwiftUI
 
-// Calm palette per Story Bible §9. Soft, generous, quiet — but still legible.
+// Dark, warm palette. `cream` is the page bg, `card` is the raised surface,
+// `ink` is bright text. Sage and warmth are lifted to pop on the dark bg.
 enum CalmTheme {
-    static let cream = Color(red: 0.980, green: 0.969, blue: 0.949)   // #FAF7F2
-    static let sand  = Color(red: 0.867, green: 0.820, blue: 0.733)   // #DDD1BB
-    static let ink   = Color(red: 0.059, green: 0.051, blue: 0.043)   // #0F0D0B
-    static let muted = Color(red: 0.169, green: 0.153, blue: 0.133)   // #2B2722
-    static let sage  = Color(red: 0.290, green: 0.420, blue: 0.298)   // #4A6B4C
-    static let sageDark = Color(red: 0.204, green: 0.314, blue: 0.216) // #345037
-    static let warmth = Color(red: 0.580, green: 0.376, blue: 0.200)  // #946033
+    static let cream = Color(red: 0.102, green: 0.090, blue: 0.078)   // #1A1714 — page bg
+    static let card  = Color(red: 0.165, green: 0.145, blue: 0.125)   // #2A2520 — cards / inputs
+    static let sand  = Color(red: 0.227, green: 0.196, blue: 0.169)   // #3A322B — borders
+    static let ink   = Color(red: 0.961, green: 0.937, blue: 0.898)   // #F5EFE5 — primary text
+    static let muted = Color(red: 0.761, green: 0.718, blue: 0.659)   // #C2B7A8 — secondary text
+    static let sage  = Color(red: 0.616, green: 0.780, blue: 0.624)   // #9DC79F — accent
+    static let sageDark = Color(red: 0.478, green: 0.682, blue: 0.490) // #7AAE7D — hover
+    static let warmth = Color(red: 0.898, green: 0.690, blue: 0.478)  // #E5B07A — warm amber
 }
 
 struct CalmCard<Content: View>: View {
@@ -17,7 +19,7 @@ struct CalmCard<Content: View>: View {
     var body: some View {
         content
             .padding(16)
-            .background(Color.white)
+            .background(CalmTheme.card)
             .overlay(
                 RoundedRectangle(cornerRadius: 18)
                     .stroke(CalmTheme.sand, lineWidth: 1)
@@ -29,9 +31,10 @@ struct CalmCard<Content: View>: View {
 struct CalmPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
+            // Bright sage button with dark page-bg text — high contrast pop on dark.
+            .foregroundColor(CalmTheme.cream)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
-            .foregroundColor(.white)
             .background(configuration.isPressed ? CalmTheme.sageDark : CalmTheme.sage)
             .clipShape(RoundedRectangle(cornerRadius: 18))
     }

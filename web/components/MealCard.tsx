@@ -7,7 +7,7 @@ export function MealCard({ meal }: { meal: Meal }) {
   return (
     <Link
       href={`/correct/${meal.id}`}
-      className="block rounded-xl2 bg-white px-4 py-4 shadow-sm ring-1 ring-sand transition hover:bg-white"
+      className="block rounded-xl2 bg-card px-4 py-4 shadow-sm ring-1 ring-sand transition hover:bg-card"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
