@@ -53,18 +53,8 @@ npm run dev                     # http://localhost:3000
 
 ## Deploying on Railway
 
-One Railway project, three services:
-
-1. **PostgreSQL** plugin (provides `DATABASE_URL` to the backend service).
-2. **Backend service** — root directory `backend/`, Dockerfile builder,
-   healthcheck `/health`.
-3. **Web service** — root directory `web/`, Dockerfile builder. Set
-   `NEXT_PUBLIC_API_URL` to the backend's public URL.
-
-Then add the web's public URL to the backend's `CORS_ORIGINS`.
-
-iOS deploys to TestFlight from Xcode on your Mac, pointing `NouriApiUrl` in
-`Info.plist` at the backend's Railway URL.
+See **`DEPLOY.md`** for the step-by-step walkthrough (project, Postgres,
+two services, env vars, smoke test, common failures).
 
 ## What's mocked / deferred
 
