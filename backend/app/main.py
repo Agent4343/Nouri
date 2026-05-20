@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -8,9 +9,20 @@ from app.db import init_db
 from app.routes import meals, profile, saved
 
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+log = logging.getLogger("nouri")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
+    log.info("startup: configuring database (url scheme=%s)", settings.async_database_url.split("://", 1)[0])
+    try:
+        await init_db()
+        log.info("startup: database ready")
+    except Exception:
+        # Log and re-raise so the platform sees the failure cause.
+        log.exception("startup: init_db failed")
+        raise
     yield
 
 
