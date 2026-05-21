@@ -1,13 +1,14 @@
 import asyncio
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db import init_db
-from app.routes import meals, profile, saved
+from app.routes import meals, photos, profile, saved
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -44,6 +45,9 @@ async def lifespan(app: FastAPI):
     scheme = settings.async_database_url.split("://", 1)[0]
     host_part = settings.async_database_url.split("@", 1)[-1] if "@" in settings.async_database_url else "<no-host>"
     log.info("startup: db scheme=%s host=%s", scheme, host_part)
+    photo_dir = Path(settings.photo_dir)
+    photo_dir.mkdir(parents=True, exist_ok=True)
+    log.info("startup: photo_dir=%s vision=%s", photo_dir, "claude" if settings.anthropic_api_key else "mock")
     task = asyncio.create_task(_init_db_with_retries())
     try:
         yield
@@ -77,3 +81,4 @@ async def ready() -> dict[str, bool]:
 app.include_router(profile.router, prefix="/profile", tags=["profile"])
 app.include_router(meals.router, prefix="/meals", tags=["meals"])
 app.include_router(saved.router, prefix="/saved", tags=["saved"])
+app.include_router(photos.router, prefix="/photos", tags=["photos"])

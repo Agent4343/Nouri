@@ -28,7 +28,7 @@ class MealAlternative(BaseModel):
 
 class MealIn(BaseModel):
     device_id: UUID
-    photo_url: str | None = None
+    photo_id: str | None = None  # from POST /photos
     hint: str | None = None  # optional text hint from user
 
 
