@@ -1,6 +1,8 @@
 import type { Meal, Profile, SavedMeal, TodaySummary } from "./types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Calls go through the Next.js rewrite (see next.config.js) — proxied
+// server-side to the backend. No CORS, no baked-in URL.
+const API_URL = "/api";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {

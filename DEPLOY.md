@@ -41,26 +41,21 @@ The backend's `config.py` normalises `postgres://` and `postgresql://` to
    - **Root Directory:** `web`
    - **Branch:** same as backend.
 3. **Variables:**
-   - `NEXT_PUBLIC_API_URL` = the backend's public URL from step 3.5
-     (e.g. `https://nouri-backend-production.up.railway.app`)
-   - Railway passes service variables as Docker build args by default; the
-     `web/Dockerfile` declares `ARG NEXT_PUBLIC_API_URL` so the value gets
-     baked into the client bundle at build time.
+   - `BACKEND_URL` = the backend's public URL from step 3.5
+     (e.g. `https://nouri-backend-production.up.railway.app`) — **no
+     trailing slash**.
+   - This is a runtime env var, not a build-time one. Next.js proxies
+     `/api/*` to it server-side via `next.config.js`, so the browser only
+     ever talks to the web service. No CORS dance, no NEXT_PUBLIC_*
+     baked into the JS bundle, rotate freely without rebuilding.
 4. **Settings → Networking → Generate Domain**.
 5. Deploy. Open the URL → should redirect to `/onboarding` on first load.
 
-> Heads up: if you change `NEXT_PUBLIC_API_URL` later you must **redeploy**
-> the web service (not just restart). The value is baked into JS bundles
-> during `next build`.
+## 5. CORS (not needed)
 
-## 5. Lock down CORS
-
-Back in the **backend** service:
-
-1. **Variables** → set `CORS_ORIGINS` to a comma-separated list of allowed
-   web origins, e.g.
-   `https://nouri-web-production.up.railway.app`
-2. Redeploy backend.
+The browser only talks to the web service (which proxies to the backend
+server-side), so cross-origin requests never happen and `CORS_ORIGINS` on
+the backend can stay at the default `*` or be omitted entirely.
 
 ## 6. Smoke test
 
@@ -98,6 +93,6 @@ Both are read by `APIClient.swift`; the env var wins.
 | Symptom | Likely cause |
 | --- | --- |
 | Backend logs `connection refused` to Postgres | `DATABASE_URL` isn't using the `${{Postgres.DATABASE_URL}}` reference. |
-| Web loads but every call 404s with `localhost:8000` in DevTools | `NEXT_PUBLIC_API_URL` wasn't set at **build** time. Redeploy. |
-| Browser console: "blocked by CORS" | `CORS_ORIGINS` on the backend doesn't include the web origin. |
+| Web loads but every call 404s | `BACKEND_URL` not set on the web service, or has a trailing slash / whitespace. |
+| `/api/*` requests time out | `BACKEND_URL` points at the wrong host (often a Railway-internal hostname that the runtime container can't resolve — use the public `*.up.railway.app` URL). |
 | Healthcheck fails on first deploy | First boot creates tables; if Postgres isn't reachable the boot hangs. Check `DATABASE_URL`. |

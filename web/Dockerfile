@@ -9,9 +9,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN mkdir -p /app/public
-# NEXT_PUBLIC_* must exist at build time — Next bakes them into the client bundle.
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+# No build-time env vars — the backend URL is consumed at runtime via the
+# /api/:path* rewrite (see next.config.js → BACKEND_URL).
 RUN npm run build
 
 FROM node:20-alpine AS runner
