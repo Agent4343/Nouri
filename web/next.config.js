@@ -2,7 +2,11 @@
 // only ever talks to this Next.js app — no CORS, no NEXT_PUBLIC_API_URL baked
 // at build time. Configure BACKEND_URL on the web service at runtime; rotate
 // it freely without rebuilding.
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
+const RAW_BACKEND_URL = process.env.BACKEND_URL;
+const BACKEND_URL = (RAW_BACKEND_URL || "http://localhost:8000").trim().replace(/\/+$/, "");
+
+// Print loudly at server startup so misconfiguration is obvious in the Deploy log.
+console.log(`[nouri/web] BACKEND_URL=${BACKEND_URL}${RAW_BACKEND_URL ? "" : "  (DEFAULT — env var not set!)"}`);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
