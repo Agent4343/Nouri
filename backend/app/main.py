@@ -47,7 +47,12 @@ async def lifespan(app: FastAPI):
     log.info("startup: db scheme=%s host=%s", scheme, host_part)
     photo_dir = Path(settings.photo_dir)
     photo_dir.mkdir(parents=True, exist_ok=True)
-    log.info("startup: photo_dir=%s vision=%s", photo_dir, "claude" if settings.anthropic_api_key else "mock")
+    log.info(
+        "startup: photo_dir=%s vision=%s key_len=%d",
+        photo_dir,
+        "claude" if settings.anthropic_api_key else "mock",
+        len(settings.anthropic_api_key),
+    )
     task = asyncio.create_task(_init_db_with_retries())
     try:
         yield
