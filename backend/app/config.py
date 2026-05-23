@@ -31,11 +31,30 @@ class Settings(BaseSettings):
     # link emails so the user lands on the right host.
     public_web_url: str = "http://localhost:3000"
 
+    def model_post_init(self, __context: object) -> None:
+        # Strip whitespace from any env-pasted value. Railway's UI has bitten us
+        # repeatedly by preserving trailing newlines on copy-paste — they break
+        # HTTP headers (illegal header value) and Postgres connection strings
+        # (database name parsing). Treat the boundary defensively.
+        for field in (
+            "database_url",
+            "cors_origins",
+            "anthropic_api_key",
+            "vision_model",
+            "photo_dir",
+            "vapid_subject",
+            "auth_secret",
+            "resend_api_key",
+            "email_from",
+            "public_web_url",
+        ):
+            v = getattr(self, field, None)
+            if isinstance(v, str):
+                object.__setattr__(self, field, v.strip())
+
     @property
     def async_database_url(self) -> str:
-        # Strip whitespace — copy-paste in Railway's web UI can sneak in a
-        # trailing newline, which Postgres then sees as part of the db name.
-        url = self.database_url.strip()
+        url = self.database_url  # already stripped in model_post_init
         if url.startswith("postgres://"):
             url = "postgresql+asyncpg://" + url[len("postgres://"):]
         elif url.startswith("postgresql://") and "+asyncpg" not in url:
