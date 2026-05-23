@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.account import resolve_devices
 from app.db import Meal, SavedMeal, get_session
 from app.schemas import (
     LogFromSavedIn,
@@ -17,7 +18,8 @@ router = APIRouter()
 
 @router.get("", response_model=list[SavedMealOut])
 async def list_saved(device_id: UUID, db: AsyncSession = Depends(get_session)) -> list[SavedMealOut]:
-    stmt = select(SavedMeal).where(SavedMeal.device_id == device_id).order_by(SavedMeal.created_at.desc())
+    devices = await resolve_devices(device_id, db)
+    stmt = select(SavedMeal).where(SavedMeal.device_id.in_(devices)).order_by(SavedMeal.created_at.desc())
     rows = (await db.scalars(stmt)).all()
     return [
         SavedMealOut(
@@ -59,8 +61,12 @@ async def create_saved(body: SavedMealIn, db: AsyncSession = Depends(get_session
 @router.post("/log", response_model=MealOut)
 async def log_from_saved(body: LogFromSavedIn, db: AsyncSession = Depends(get_session)) -> MealOut:
     saved = await db.get(SavedMeal, body.saved_meal_id)
-    if saved is None or saved.device_id != body.device_id:
+    if saved is None:
         raise HTTPException(404, "saved meal not found")
+    if saved.device_id != body.device_id:
+        devices = await resolve_devices(body.device_id, db)
+        if saved.device_id not in devices:
+            raise HTTPException(404, "saved meal not found")
     # Saved Meals bypass AI entirely (Story Bible §14, §21).
     meal = Meal(
         id=uuid4(),

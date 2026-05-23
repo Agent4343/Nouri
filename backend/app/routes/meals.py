@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.account import resolve_devices
 from app.copy import daily_message
 from app.db import Meal, Profile, get_session
 from app.routes.photos import find_photo_path, media_type_for
@@ -186,11 +187,12 @@ async def today(device_id: UUID, db: AsyncSession = Depends(get_session)) -> Tod
     today_date = datetime.utcnow().date()
     today_start = datetime.combine(today_date, time.min)
     today_end = today_start + timedelta(days=1)
+    devices = await resolve_devices(device_id, db)
 
     # Today's meals (newest first for the list)
     stmt = (
         select(Meal)
-        .where(Meal.device_id == device_id, Meal.logged_at >= today_start, Meal.logged_at < today_end)
+        .where(Meal.device_id.in_(devices), Meal.logged_at >= today_start, Meal.logged_at < today_end)
         .order_by(Meal.logged_at.desc())
     )
     rows = (await db.scalars(stmt)).all()
@@ -209,7 +211,7 @@ async def today(device_id: UUID, db: AsyncSession = Depends(get_session)) -> Tod
             func.date_trunc("day", Meal.logged_at).label("day"),
             func.coalesce(func.sum(Meal.calories), 0).label("cals"),
         )
-        .where(Meal.device_id == device_id, Meal.logged_at >= week_start, Meal.logged_at < today_end)
+        .where(Meal.device_id.in_(devices), Meal.logged_at >= week_start, Meal.logged_at < today_end)
         .group_by("day")
     )
     rows_by_day: dict[date, int] = {}
@@ -228,7 +230,7 @@ async def today(device_id: UUID, db: AsyncSession = Depends(get_session)) -> Tod
     yesterday_stmt = (
         select(Meal)
         .where(
-            Meal.device_id == device_id,
+            Meal.device_id.in_(devices),
             Meal.logged_at >= yesterday_start,
             Meal.logged_at < today_start,
         )
@@ -249,7 +251,7 @@ async def today(device_id: UUID, db: AsyncSession = Depends(get_session)) -> Tod
     # How long since the most recent log? 0 if anything today, else N days back.
     last_stmt = (
         select(Meal.logged_at)
-        .where(Meal.device_id == device_id)
+        .where(Meal.device_id.in_(devices))
         .order_by(Meal.logged_at.desc())
         .limit(1)
     )
@@ -312,10 +314,11 @@ async def meal_suggestion(
     home page just hides the section.
     """
     since = datetime.utcnow() - timedelta(days=days)
+    devices = await resolve_devices(device_id, db)
     stmt = (
         select(Meal.label, func.max(Meal.id).label("source_id"), func.max(Meal.calories).label("cal"), func.count().label("hits"))
         .where(
-            Meal.device_id == device_id,
+            Meal.device_id.in_(devices),
             Meal.logged_at >= since,
             Meal.meal_type == meal_type.lower(),
         )
@@ -341,9 +344,10 @@ async def recent_meals(
     logged" chip row on the snap page so users can one-tap relog without
     spending a vision call (§14, §21)."""
     since = datetime.utcnow() - timedelta(days=days)
+    devices = await resolve_devices(device_id, db)
     stmt = (
         select(Meal)
-        .where(Meal.device_id == device_id, Meal.logged_at >= since)
+        .where(Meal.device_id.in_(devices), Meal.logged_at >= since)
         .order_by(Meal.logged_at.desc())
     )
     rows = (await db.scalars(stmt)).all()
@@ -364,8 +368,13 @@ async def recent_meals(
 async def repeat_meal(body: RepeatMealIn, db: AsyncSession = Depends(get_session)) -> MealOut:
     """Relog a prior meal as-is. Bypasses AI (§21) — user has already confirmed it before."""
     source = await db.get(Meal, body.source_meal_id)
-    if source is None or source.device_id != body.device_id:
+    if source is None:
         raise HTTPException(404, "source meal not found")
+    if source.device_id != body.device_id:
+        # Cross-device repeat is allowed only between linked devices.
+        devices = await resolve_devices(body.device_id, db)
+        if source.device_id not in devices:
+            raise HTTPException(404, "source meal not found")
     clone = Meal(
         id=uuid4(),
         device_id=body.device_id,

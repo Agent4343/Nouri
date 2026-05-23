@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.account import resolve_devices
 from app.db import Profile, WeightLog, get_session
 from app.schemas import WeightIn, WeightOut
 
@@ -35,9 +36,10 @@ async def list_weights(
     db: AsyncSession = Depends(get_session),
 ) -> list[WeightOut]:
     since = datetime.utcnow() - timedelta(days=days)
+    devices = await resolve_devices(device_id, db)
     stmt = (
         select(WeightLog)
-        .where(WeightLog.device_id == device_id, WeightLog.logged_at >= since)
+        .where(WeightLog.device_id.in_(devices), WeightLog.logged_at >= since)
         .order_by(WeightLog.logged_at.asc())
     )
     rows = (await db.scalars(stmt)).all()
