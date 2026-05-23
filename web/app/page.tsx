@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { getDeviceId, hasOnboarded } from "@/lib/device";
 import { DailyTotal } from "@/components/DailyTotal";
 import { MealCard } from "@/components/MealCard";
+import { WeeklyChart } from "@/components/WeeklyChart";
 import type { TodaySummary } from "@/lib/types";
 
 export default function HomePage() {
@@ -56,6 +57,8 @@ export default function HomePage() {
           ))}
         </div>
       )}
+
+      <WeeklyChart week={summary.week} target={summary.target_calories} />
     </div>
   );
 }

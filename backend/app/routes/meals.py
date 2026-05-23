@@ -1,9 +1,9 @@
 import logging
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.copy import daily_message
@@ -15,6 +15,7 @@ from app.schemas import (
     MealIn,
     MealOut,
     TodaySummary,
+    WeeklyDayTotal,
 )
 from app.vision import VisionGuess, guess as mock_guess
 from app.vision_claude import analyze_food, is_configured as claude_configured
@@ -141,20 +142,58 @@ async def delete_meal(meal_id: UUID, db: AsyncSession = Depends(get_session)) ->
 
 @router.get("/today", response_model=TodaySummary)
 async def today(device_id: UUID, db: AsyncSession = Depends(get_session)) -> TodaySummary:
-    start = datetime.combine(datetime.utcnow().date(), time.min)
-    end = start + timedelta(days=1)
+    today_date = datetime.utcnow().date()
+    today_start = datetime.combine(today_date, time.min)
+    today_end = today_start + timedelta(days=1)
+
+    # Today's meals (newest first for the list)
     stmt = (
         select(Meal)
-        .where(Meal.device_id == device_id, Meal.logged_at >= start, Meal.logged_at < end)
+        .where(Meal.device_id == device_id, Meal.logged_at >= today_start, Meal.logged_at < today_end)
         .order_by(Meal.logged_at.desc())
     )
     rows = (await db.scalars(stmt)).all()
+
     profile = await db.get(Profile, device_id)
     target = profile.calorie_target if profile else None
     total_cal = sum(m.calories for m in rows)
     total_p = sum(m.protein_g for m in rows)
     total_c = sum(m.carbs_g for m in rows)
     total_f = sum(m.fat_g for m in rows)
+
+    # 7-day calorie totals (oldest first) — for the home-page chart.
+    week_start = today_start - timedelta(days=6)
+    week_stmt = (
+        select(
+            func.date_trunc("day", Meal.logged_at).label("day"),
+            func.coalesce(func.sum(Meal.calories), 0).label("cals"),
+        )
+        .where(Meal.device_id == device_id, Meal.logged_at >= week_start, Meal.logged_at < today_end)
+        .group_by("day")
+    )
+    rows_by_day: dict[date, int] = {}
+    for day, cals in (await db.execute(week_stmt)).all():
+        if isinstance(day, datetime):
+            day = day.date()
+        rows_by_day[day] = int(cals)
+    week: list[WeeklyDayTotal] = []
+    for offset in range(6, -1, -1):
+        d = today_date - timedelta(days=offset)
+        week.append(WeeklyDayTotal(date=d.isoformat(), calories=rows_by_day.get(d, 0)))
+
+    # How long since the most recent log? 0 if anything today, else N days back.
+    last_stmt = (
+        select(Meal.logged_at)
+        .where(Meal.device_id == device_id)
+        .order_by(Meal.logged_at.desc())
+        .limit(1)
+    )
+    last_log = (await db.scalars(last_stmt)).first()
+    if last_log is None:
+        days_since = 0
+    else:
+        days_since = max(0, (today_date - last_log.date()).days)
+
     return TodaySummary(
         device_id=device_id,
         total_calories=total_cal,
@@ -163,5 +202,7 @@ async def today(device_id: UUID, db: AsyncSession = Depends(get_session)) -> Tod
         total_fat_g=round(total_f, 1),
         target_calories=target,
         meals=[_to_out(m) for m in rows],
-        message=daily_message(total_cal, target),
+        message=daily_message(total_cal, target, days_since),
+        week=week,
+        days_since_last_log=days_since,
     )

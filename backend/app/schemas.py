@@ -57,6 +57,11 @@ class MealCorrection(BaseModel):
     fat_g: float | None = Field(default=None, ge=0)
 
 
+class WeeklyDayTotal(BaseModel):
+    date: str  # YYYY-MM-DD
+    calories: int
+
+
 class TodaySummary(BaseModel):
     device_id: UUID
     total_calories: int
@@ -66,6 +71,8 @@ class TodaySummary(BaseModel):
     target_calories: int | None
     meals: list[MealOut]
     message: str  # forgiving daily-total framing
+    week: list[WeeklyDayTotal]  # last 7 days including today, oldest first
+    days_since_last_log: int  # 0 if logged today, 1 if last log was yesterday, etc.
 
 
 class SavedMealIn(BaseModel):

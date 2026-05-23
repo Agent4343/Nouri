@@ -25,6 +25,11 @@ export type Meal = {
   alternatives?: MealAlternative[];
 };
 
+export type WeeklyDayTotal = {
+  date: string; // YYYY-MM-DD
+  calories: number;
+};
+
 export type TodaySummary = {
   device_id: string;
   total_calories: number;
@@ -34,6 +39,8 @@ export type TodaySummary = {
   target_calories: number | null;
   meals: Meal[];
   message: string;
+  week: WeeklyDayTotal[];
+  days_since_last_log: number;
 };
 
 export type SavedMeal = {
