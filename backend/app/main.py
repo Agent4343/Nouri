@@ -8,8 +8,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db import init_db
+from app.auth import get_auth_secret
 from app.push import get_vapid_keys, run_due_reminders
-from app.routes import barcode, meals, photos, profile, push, saved, weights
+from app.routes import auth, barcode, meals, photos, profile, push, saved, weights
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -64,6 +65,18 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         log.warning("startup: VAPID key init failed: %s", e)
 
+    # Warm the auth secret so the first sign-in request doesn't take the
+    # disk-write hit. Same persistence pattern as VAPID.
+    try:
+        get_auth_secret()
+        log.info(
+            "startup: auth ready (email=%s public_web=%s)",
+            "resend" if settings.resend_api_key else "console-only",
+            settings.public_web_url,
+        )
+    except Exception as e:
+        log.warning("startup: auth secret init failed: %s", e)
+
     task = asyncio.create_task(_init_db_with_retries())
 
     # In-process scheduler — for a single web replica this is enough. Move to
@@ -110,3 +123,4 @@ app.include_router(photos.router, prefix="/photos", tags=["photos"])
 app.include_router(weights.router, prefix="/weights", tags=["weights"])
 app.include_router(barcode.router, prefix="/barcode", tags=["barcode"])
 app.include_router(push.router, prefix="/push", tags=["push"])
+app.include_router(auth.router, prefix="/auth", tags=["auth"])

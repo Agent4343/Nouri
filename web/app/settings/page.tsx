@@ -7,6 +7,7 @@ import { getDeviceId } from "@/lib/device";
 import { getUnits, setUnits, lbToKg, ftInToCm, type Units } from "@/lib/units";
 import { WeightLog } from "@/components/WeightLog";
 import { RemindersCard } from "@/components/RemindersCard";
+import { AccountCard } from "@/components/AccountCard";
 import type { Profile } from "@/lib/types";
 
 function kgToLbStr(kg: number | null | undefined): string {
@@ -118,6 +119,8 @@ export default function SettingsPage() {
         </div>
         <div className="mt-1 text-xs text-muted">Recalculated whenever you update weight or goal.</div>
       </div>
+
+      <AccountCard />
 
       <WeightLog />
 

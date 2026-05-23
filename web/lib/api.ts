@@ -111,4 +111,20 @@ export const api = {
     fat_g?: number;
     source?: "manual" | "barcode";
   }) => request<Meal>("/meals/manual", { method: "POST", body: JSON.stringify(body) }),
+  authStart: (email: string) =>
+    request<{ sent: boolean }>("/auth/email/start", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+  authVerify: (body: { device_id: string; token: string }) =>
+    request<{ user_id: string | null; email: string | null }>("/auth/email/verify", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  authMe: (deviceId: string) =>
+    request<{ user_id: string | null; email: string | null }>(`/auth/me/${deviceId}`),
+  authSignOut: (deviceId: string) =>
+    fetch(`${API_URL}/auth/sign-out/${deviceId}`, { method: "POST" }).then((r) => {
+      if (!r.ok && r.status !== 404) throw new Error(`${r.status}`);
+    }),
 };

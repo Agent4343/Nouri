@@ -21,6 +21,16 @@ class Settings(BaseSettings):
     # restarts. vapid_subject is the contact mailto: that browsers display.
     vapid_subject: str = "mailto:hello@nouri.app"
 
+    # Magic-link auth. AUTH_SECRET is auto-generated and persisted to disk on
+    # first boot if not set in the env (same pattern as VAPID). RESEND_API_KEY
+    # is optional — without it the magic link is logged to stdout (dev mode).
+    auth_secret: str = ""
+    resend_api_key: str = ""
+    email_from: str = "Nouri <hello@nouri.app>"
+    # Public URL where the web frontend is served — embedded in the magic
+    # link emails so the user lands on the right host.
+    public_web_url: str = "http://localhost:3000"
+
     @property
     def async_database_url(self) -> str:
         # Strip whitespace — copy-paste in Railway's web UI can sneak in a

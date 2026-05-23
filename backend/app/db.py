@@ -7,7 +7,6 @@ from sqlalchemy import DateTime, Float, ForeignKey, String, Boolean
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-
 from app.config import settings
 
 
@@ -85,6 +84,28 @@ class WeightLog(Base):
     device_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), index=True)
     kg: Mapped[float] = mapped_column(Float)
     logged_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, index=True)
+
+
+class User(Base):
+    """A signed-in identity. One per email. Apple Sign-In links via apple_user_id later."""
+
+    __tablename__ = "users"
+
+    id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), primary_key=True, default=uuid4)
+    email: Mapped[str] = mapped_column(String(320), unique=True, index=True)
+    apple_user_id: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+class DeviceLink(Base):
+    """Maps an anonymous device_id to a signed-in User. Storage stays keyed by
+    device_id everywhere — this table just records who owns which device."""
+
+    __tablename__ = "device_links"
+
+    device_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), primary_key=True)
+    user_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), ForeignKey("users.id"), index=True)
+    linked_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
 
 
 class PushSubscription(Base):
