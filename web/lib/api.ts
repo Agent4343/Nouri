@@ -56,6 +56,10 @@ export const api = {
   today: (deviceId: string) => request<TodaySummary>(`/meals/today?device_id=${deviceId}`),
   repeatMeal: (body: { device_id: string; source_meal_id: string }) =>
     request<Meal>("/meals/repeat", { method: "POST", body: JSON.stringify(body) }),
+  recentMeals: (deviceId: string, days = 14, limit = 8) =>
+    request<{ source_meal_id: string; label: string; calories: number }[]>(
+      `/meals/recent?device_id=${deviceId}&days=${days}&limit=${limit}`,
+    ),
   deleteMeal: (mealId: string) =>
     fetch(`${API_URL}/meals/${mealId}`, { method: "DELETE" }).then((r) => {
       if (!r.ok) throw new Error(`${r.status}`);

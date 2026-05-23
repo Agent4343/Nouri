@@ -89,9 +89,15 @@ export default function HomePage() {
       )}
 
       {summary.meals.length === 0 ? (
-        <div className="rounded-xl2 bg-card p-5 text-sm text-ink ring-1 ring-sand">
-          Nothing logged yet. Whenever you're ready.
-        </div>
+        <Link
+          href="/snap"
+          className="block rounded-xl2 bg-card p-5 text-center ring-1 ring-sand hover:bg-card"
+        >
+          <div className="text-ink">Nothing logged yet today.</div>
+          <div className="mt-1 text-sm text-muted">
+            Tap to snap your first meal — even a rough estimate counts.
+          </div>
+        </Link>
       ) : (
         <MealsByType meals={summary.meals} />
       )}

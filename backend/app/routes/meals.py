@@ -2,7 +2,7 @@ import logging
 from datetime import date, datetime, time, timedelta
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -267,7 +267,7 @@ async def today(device_id: UUID, db: AsyncSession = Depends(get_session)) -> Tod
         total_fat_g=round(total_f, 1),
         target_calories=target,
         meals=[_to_out(m) for m in rows],
-        message=daily_message(total_cal, target, days_since),
+        message=daily_message(total_cal, target, days_since, profile.goal if profile else None),
         week=week,
         days_since_last_log=days_since,
         yesterday=yesterday,
@@ -296,6 +296,36 @@ async def log_manual(body: ManualMealIn, db: AsyncSession = Depends(get_session)
     await db.commit()
     await db.refresh(meal)
     return _to_out(meal)
+
+
+@router.get("/recent", response_model=list[YesterdayMeal])
+async def recent_meals(
+    device_id: UUID,
+    days: int = Query(default=14, ge=1, le=90),
+    limit: int = Query(default=8, ge=1, le=20),
+    db: AsyncSession = Depends(get_session),
+) -> list[YesterdayMeal]:
+    """Dedup'd recent meals across the last N days — drives the "Recently
+    logged" chip row on the snap page so users can one-tap relog without
+    spending a vision call (§14, §21)."""
+    since = datetime.utcnow() - timedelta(days=days)
+    stmt = (
+        select(Meal)
+        .where(Meal.device_id == device_id, Meal.logged_at >= since)
+        .order_by(Meal.logged_at.desc())
+    )
+    rows = (await db.scalars(stmt)).all()
+    seen: set[str] = set()
+    out: list[YesterdayMeal] = []
+    for m in rows:
+        key = m.label.strip().lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(YesterdayMeal(source_meal_id=m.id, label=m.label, calories=m.calories))
+        if len(out) >= limit:
+            break
+    return out
 
 
 @router.post("/repeat", response_model=MealOut)

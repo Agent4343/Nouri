@@ -1,10 +1,12 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { getDeviceId } from "@/lib/device";
 import { compressImage } from "@/lib/imageCompress";
+
+type RecentChip = { source_meal_id: string; label: string; calories: number };
 
 type MealType = "breakfast" | "lunch" | "dinner" | "snack";
 const MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner", "snack"];
@@ -46,6 +48,25 @@ export default function SnapPage() {
   const [uploading, setUploading] = useState(false);
   const [logging, setLogging] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [recents, setRecents] = useState<RecentChip[]>([]);
+  const [relogging, setRelogging] = useState<string | null>(null);
+
+  useEffect(() => {
+    api
+      .recentMeals(getDeviceId(), 14, 6)
+      .then(setRecents)
+      .catch(() => setRecents([]));
+  }, []);
+
+  async function logRecent(sourceId: string) {
+    setRelogging(sourceId);
+    try {
+      await api.repeatMeal({ device_id: getDeviceId(), source_meal_id: sourceId });
+      router.replace("/");
+    } finally {
+      setRelogging(null);
+    }
+  }
 
   async function onFile(file: File) {
     setErr(null);
@@ -94,6 +115,25 @@ export default function SnapPage() {
           Take a photo (or pick one) and we'll estimate it. Add a hint if it helps.
         </p>
       </div>
+
+      {recents.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <span className="text-sm text-muted">Recently logged · one-tap</span>
+          <div className="flex flex-wrap gap-2">
+            {recents.map((r) => (
+              <button
+                key={r.source_meal_id}
+                type="button"
+                onClick={() => logRecent(r.source_meal_id)}
+                disabled={relogging !== null}
+                className="rounded-full bg-card px-3 py-1.5 text-sm text-ink ring-1 ring-sand hover:bg-cream disabled:opacity-60"
+              >
+                {relogging === r.source_meal_id ? "Logging…" : `${r.label} · ${r.calories} cal`}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <input
         ref={fileInput}
