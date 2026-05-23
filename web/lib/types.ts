@@ -5,6 +5,7 @@ export type Profile = {
   height_cm: number | null;
   goal: string | null;
   calorie_target: number | null;
+  photo_retention_days: number | null;
 };
 
 export type MealAlternative = { label: string; calories: number };

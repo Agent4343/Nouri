@@ -10,6 +10,8 @@ class ProfileIn(BaseModel):
     weight_kg: float | None = Field(default=None, gt=0, lt=500)
     height_cm: float | None = Field(default=None, gt=0, lt=300)
     goal: str | None = Field(default=None, max_length=32)
+    # null = keep forever; otherwise delete photos older than N days.
+    photo_retention_days: int | None = Field(default=None, ge=1, le=3650)
 
 
 class ProfileOut(BaseModel):
@@ -19,6 +21,7 @@ class ProfileOut(BaseModel):
     height_cm: float | None
     goal: str | None
     calorie_target: int | None
+    photo_retention_days: int | None = None
 
 
 class MealAlternative(BaseModel):

@@ -27,6 +27,18 @@ def _calorie_target(p: ProfileIn) -> int | None:
     return tdee
 
 
+def _to_out(profile: Profile) -> ProfileOut:
+    return ProfileOut(
+        device_id=profile.device_id,
+        age=profile.age,
+        weight_kg=profile.weight_kg,
+        height_cm=profile.height_cm,
+        goal=profile.goal,
+        calorie_target=profile.calorie_target,
+        photo_retention_days=profile.photo_retention_days,
+    )
+
+
 @router.post("", response_model=ProfileOut)
 async def upsert_profile(body: ProfileIn, db: AsyncSession = Depends(get_session)) -> ProfileOut:
     target = _calorie_target(body)
@@ -39,6 +51,7 @@ async def upsert_profile(body: ProfileIn, db: AsyncSession = Depends(get_session
             height_cm=body.height_cm,
             goal=body.goal,
             calorie_target=target,
+            photo_retention_days=body.photo_retention_days,
         )
         db.add(profile)
     else:
@@ -47,17 +60,11 @@ async def upsert_profile(body: ProfileIn, db: AsyncSession = Depends(get_session
         existing.height_cm = body.height_cm
         existing.goal = body.goal
         existing.calorie_target = target
+        existing.photo_retention_days = body.photo_retention_days
         profile = existing
     await db.commit()
     await db.refresh(profile)
-    return ProfileOut(
-        device_id=profile.device_id,
-        age=profile.age,
-        weight_kg=profile.weight_kg,
-        height_cm=profile.height_cm,
-        goal=profile.goal,
-        calorie_target=profile.calorie_target,
-    )
+    return _to_out(profile)
 
 
 @router.get("/{device_id}", response_model=ProfileOut)
@@ -65,11 +72,4 @@ async def get_profile(device_id: UUID, db: AsyncSession = Depends(get_session)) 
     profile = await db.get(Profile, device_id)
     if profile is None:
         raise HTTPException(404, "profile not found")
-    return ProfileOut(
-        device_id=profile.device_id,
-        age=profile.age,
-        weight_kg=profile.weight_kg,
-        height_cm=profile.height_cm,
-        goal=profile.goal,
-        calorie_target=profile.calorie_target,
-    )
+    return _to_out(profile)

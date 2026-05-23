@@ -8,6 +8,7 @@ import { getUnits, setUnits, lbToKg, ftInToCm, type Units } from "@/lib/units";
 import { WeightLog } from "@/components/WeightLog";
 import { RemindersCard } from "@/components/RemindersCard";
 import { AccountCard } from "@/components/AccountCard";
+import { PhotoRetentionCard } from "@/components/PhotoRetentionCard";
 import type { Profile } from "@/lib/types";
 
 function kgToLbStr(kg: number | null | undefined): string {
@@ -96,6 +97,7 @@ export default function SettingsPage() {
         weight_kg,
         height_cm,
         goal,
+        photo_retention_days: profile?.photo_retention_days ?? null,
       });
       setProfile(p);
       setSavedAt(Date.now());
@@ -125,6 +127,8 @@ export default function SettingsPage() {
       <WeightLog />
 
       <RemindersCard />
+
+      <PhotoRetentionCard />
 
       <div className="flex gap-2">
         {(["metric", "imperial"] as const).map((u) => (

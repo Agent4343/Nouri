@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.db import init_db
 from app.auth import get_auth_secret
+from app.cleanup import run_photo_cleanup
 from app.push import get_vapid_keys, run_due_reminders
 from app.routes import auth, barcode, meals, photos, profile, push, saved, weights
 
@@ -83,8 +84,9 @@ async def lifespan(app: FastAPI):
     # an external worker when scaling beyond one replica.
     scheduler = AsyncIOScheduler()
     scheduler.add_job(run_due_reminders, "interval", minutes=10, id="reminders", coalesce=True, max_instances=1)
+    scheduler.add_job(run_photo_cleanup, "interval", hours=24, id="photo_cleanup", coalesce=True, max_instances=1)
     scheduler.start()
-    log.info("startup: reminder scheduler running every 10 min")
+    log.info("startup: schedulers running (reminders 10m, photo cleanup 24h)")
 
     try:
         yield

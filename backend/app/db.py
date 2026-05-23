@@ -44,6 +44,10 @@ class Profile(Base):
     height_cm: Mapped[float | None] = mapped_column(Float, nullable=True)
     goal: Mapped[str | None] = mapped_column(String(32), nullable=True)
     calorie_target: Mapped[int | None] = mapped_column(nullable=True)
+    # Per-device photo retention. null = keep forever (default). Integer = delete
+    # photos older than N days during the nightly sweep (Story Bible §25 — give
+    # the user an explicit opt-in to short retention).
+    photo_retention_days: Mapped[int | None] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
 
 
@@ -142,6 +146,7 @@ async def init_db() -> None:
         # Once schema churn slows we'll move to Alembic.
         for stmt in [
             "ALTER TABLE meals ADD COLUMN IF NOT EXISTS meal_type VARCHAR(20)",
+            "ALTER TABLE profiles ADD COLUMN IF NOT EXISTS photo_retention_days INTEGER",
         ]:
             await conn.execute(text(stmt))
 
