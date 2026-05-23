@@ -5,6 +5,10 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Nouri",
   description: "Nutrition tracking without perfectionism.",
+  manifest: "/manifest.webmanifest",
+  themeColor: "#1A1714",
+  icons: { icon: "/icon.svg", apple: "/icon.svg" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Nouri" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

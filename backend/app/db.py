@@ -87,6 +87,29 @@ class WeightLog(Base):
     logged_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, index=True)
 
 
+class PushSubscription(Base):
+    """Browser push subscription endpoint + reminder preferences.
+
+    One device can have one subscription. If a user resubscribes on the same
+    device the endpoint is updated rather than duplicated.
+    """
+
+    __tablename__ = "push_subscriptions"
+
+    device_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), primary_key=True)
+    endpoint: Mapped[str] = mapped_column(String(2048))
+    p256dh: Mapped[str] = mapped_column(String(255))
+    auth: Mapped[str] = mapped_column(String(255))
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    # Local hour-of-day (0-23) and timezone offset in minutes from UTC.
+    # Together they let the server figure out when "now" is the user's preferred reminder time
+    # without storing a timezone name.
+    hour_local: Mapped[int] = mapped_column(default=20)  # 8pm default
+    tz_offset_min: Mapped[int] = mapped_column(default=0)
+    last_sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
 async def init_db() -> None:
     if engine is None:
         raise RuntimeError("engine is not configured (check DATABASE_URL)")

@@ -70,6 +70,38 @@ export const api = {
   listWeights: (deviceId: string, days = 30) =>
     request<WeightEntry[]>(`/weights?device_id=${deviceId}&days=${days}`),
   lookupBarcode: (code: string) => request<BarcodeProduct>(`/barcode/${encodeURIComponent(code)}`),
+  pushPublicKey: () => request<{ public_key: string }>("/push/public-key"),
+  pushSubscribe: (body: {
+    device_id: string;
+    endpoint: string;
+    keys: { p256dh: string; auth: string };
+    hour_local: number;
+    tz_offset_min: number;
+  }) =>
+    request<{ enabled: boolean; hour_local: number; tz_offset_min: number }>("/push/subscribe", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  pushSettings: (deviceId: string) =>
+    request<{ enabled: boolean; hour_local: number; tz_offset_min: number } | null>(
+      `/push/settings/${deviceId}`,
+    ),
+  pushUpdateSettings: (body: {
+    device_id: string;
+    enabled: boolean;
+    hour_local: number;
+    tz_offset_min: number;
+  }) =>
+    request<{ enabled: boolean; hour_local: number; tz_offset_min: number }>("/push/settings", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  pushUnsubscribe: (deviceId: string) =>
+    fetch(`${API_URL}/push/subscribe/${deviceId}`, { method: "DELETE" }).then((r) => {
+      if (!r.ok && r.status !== 404) throw new Error(`${r.status}`);
+    }),
+  pushTest: (deviceId: string) =>
+    request<{ ok: boolean }>(`/push/test/${deviceId}`, { method: "POST" }),
   logManual: (body: {
     device_id: string;
     label: string;

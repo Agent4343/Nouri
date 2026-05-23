@@ -16,6 +16,11 @@ class Settings(BaseSettings):
     photo_dir: str = "/tmp/nouri-photos"
     photo_max_bytes: int = 8 * 1024 * 1024  # 8MB upload cap
 
+    # Web push reminders. VAPID keys are generated on first boot if these aren't
+    # set, and persisted to {photo_dir}/../vapid.json so they're stable across
+    # restarts. vapid_subject is the contact mailto: that browsers display.
+    vapid_subject: str = "mailto:hello@nouri.app"
+
     @property
     def async_database_url(self) -> str:
         # Strip whitespace — copy-paste in Railway's web UI can sneak in a

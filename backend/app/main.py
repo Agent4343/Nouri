@@ -8,7 +8,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db import init_db
-from app.routes import barcode, meals, photos, profile, saved, weights
+from app.push import get_vapid_keys, run_due_reminders
+from app.routes import barcode, meals, photos, profile, push, saved, weights
+
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -53,10 +56,27 @@ async def lifespan(app: FastAPI):
         "claude" if settings.anthropic_api_key else "mock",
         len(settings.anthropic_api_key),
     )
+
+    # Ensure VAPID keys exist so the public-key endpoint can answer immediately.
+    try:
+        keys = get_vapid_keys()
+        log.info("startup: push enabled (public key suffix=…%s)", keys["public_b64url"][-8:])
+    except Exception as e:
+        log.warning("startup: VAPID key init failed: %s", e)
+
     task = asyncio.create_task(_init_db_with_retries())
+
+    # In-process scheduler — for a single web replica this is enough. Move to
+    # an external worker when scaling beyond one replica.
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(run_due_reminders, "interval", minutes=10, id="reminders", coalesce=True, max_instances=1)
+    scheduler.start()
+    log.info("startup: reminder scheduler running every 10 min")
+
     try:
         yield
     finally:
+        scheduler.shutdown(wait=False)
         task.cancel()
 
 
@@ -89,3 +109,4 @@ app.include_router(saved.router, prefix="/saved", tags=["saved"])
 app.include_router(photos.router, prefix="/photos", tags=["photos"])
 app.include_router(weights.router, prefix="/weights", tags=["weights"])
 app.include_router(barcode.router, prefix="/barcode", tags=["barcode"])
+app.include_router(push.router, prefix="/push", tags=["push"])

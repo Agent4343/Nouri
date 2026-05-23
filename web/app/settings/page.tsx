@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { api } from "@/lib/api";
 import { getDeviceId } from "@/lib/device";
 import { getUnits, setUnits, lbToKg, ftInToCm, type Units } from "@/lib/units";
 import { WeightLog } from "@/components/WeightLog";
+import { RemindersCard } from "@/components/RemindersCard";
 import type { Profile } from "@/lib/types";
 
 function kgToLbStr(kg: number | null | undefined): string {
@@ -119,6 +121,8 @@ export default function SettingsPage() {
 
       <WeightLog />
 
+      <RemindersCard />
+
       <div className="flex gap-2">
         {(["metric", "imperial"] as const).map((u) => (
           <button
@@ -191,6 +195,12 @@ export default function SettingsPage() {
       {savedAt && Date.now() - savedAt < 4000 && (
         <p className="text-center text-sm text-muted">Saved.</p>
       )}
+
+      <p className="pt-2 text-center text-xs text-muted">
+        <Link href="/privacy" className="underline-offset-2 hover:underline">Privacy</Link>
+        {" · "}
+        <Link href="/terms" className="underline-offset-2 hover:underline">Terms</Link>
+      </p>
 
       <style jsx>{`
         .input {

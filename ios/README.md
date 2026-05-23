@@ -66,12 +66,29 @@ backend's public URL.
 > you must hit plain HTTP, add `NSAllowsArbitraryLoads` to `Info.plist` and
 > remove it before submitting.
 
+## HealthKit wiring (once you're in Xcode)
+
+`Services/HealthKitBridge.swift` is the integration point. To turn it on:
+
+1. **Capabilities** — Target → Signing & Capabilities → **+ Capability** →
+   **HealthKit**. Xcode adds the entitlements automatically.
+2. **Info.plist** — add two strings (HealthKit refuses to work without them):
+   - `NSHealthShareUsageDescription` = *"Nouri reads weight and steps so your
+     calorie target stays calibrated without retyping."*
+   - `NSHealthUpdateUsageDescription` = *"Nouri writes the meals you log to
+     Health so other apps can see your day."*
+3. **Request permission** — call `try await HealthKitBridge.shared.requestAuthorization()`
+   on first launch or on a Settings toggle.
+4. **Write meals** — in `CorrectView` and after a fresh snap, call
+   `await HealthKitBridge.shared.writeMeal(label:calories:proteinG:carbsG:fatG:)`.
+   It silently no-ops if unauthorized — HealthKit is a mirror, not the
+   source of truth.
+5. **Pull weight** (optional) — `await HealthKitBridge.shared.latestWeightKg()`
+   to prefill the weight field.
+
 ## What's not here yet (V2+)
 
-- Real camera capture / photo upload (§13). Today the snap flow sends a
-  text hint to the mock vision layer so the full correction loop can be
-  tested.
-- HealthKit (§12). Mandatory for V1 launch — wire after a working loop is
-  validated with beta users.
+- Real camera capture in `SnapView` (Apple Camera APIs); current SwiftUI
+  uses a hint string, matching the web's pre-camera flow.
 - Apple Sign-In. Intentionally absent so the first 60 seconds has zero
-  signup friction (§8).
+  signup friction (§8). Will land alongside web auth.
