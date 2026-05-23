@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { LeafMark } from "@/components/LeafMark";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -27,12 +28,15 @@ export default function SignInPage() {
 
   if (sent) {
     return (
-      <section className="flex flex-col gap-4 pt-6">
-        <h1 className="text-2xl font-medium">Check your inbox</h1>
-        <p className="text-ink">
-          We sent a sign-in link to <strong>{email}</strong>. Tap it to finish — the link expires in
-          15 minutes.
-        </p>
+      <section className="flex min-h-[68vh] flex-col items-center justify-center gap-5 text-center">
+        <LeafMark className="h-12 w-12" />
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl font-medium">Check your inbox</h1>
+          <p className="max-w-xs text-sm text-ink">
+            We sent a sign-in link to <strong>{email}</strong>. Tap it to finish — it expires in 15
+            minutes.
+          </p>
+        </div>
         <p className="text-sm text-muted">
           Didn't get it? Check spam, or{" "}
           <button
@@ -40,9 +44,9 @@ export default function SignInPage() {
               setSent(false);
               setEmail("");
             }}
-            className="underline"
+            className="text-sage underline-offset-4 hover:underline"
           >
-            try a different address
+            try another address
           </button>
           .
         </p>
@@ -54,29 +58,27 @@ export default function SignInPage() {
   }
 
   return (
-    <section className="flex flex-col gap-5 pt-6">
-      <div>
-        <h1 className="text-2xl font-medium">Sign in</h1>
-        <p className="mt-1 text-sm text-ink">
-          Optional — sign in so your meals follow you across devices. We'll email you a link, no
-          password to remember.
+    <section className="flex min-h-[68vh] flex-col justify-center gap-7">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <LeafMark className="h-12 w-12" />
+        <h1 className="text-2xl font-medium">Take Nouri with you</h1>
+        <p className="max-w-xs text-sm text-muted">
+          Sign in and your meals follow you between devices. We'll email a link — no password to
+          remember.
         </p>
       </div>
 
       <form onSubmit={submit} className="flex flex-col gap-3">
-        <label className="flex flex-col gap-1.5">
-          <span className="text-sm text-muted">Email</span>
-          <input
-            type="email"
-            required
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className="rounded-xl2 bg-card px-4 py-3 text-ink ring-1 ring-sand outline-none"
-          />
-        </label>
-
+        <input
+          type="email"
+          required
+          autoComplete="email"
+          inputMode="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@example.com"
+          className="rounded-xl2 bg-card px-4 py-4 text-center text-ink ring-1 ring-sand outline-none"
+        />
         <button
           type="submit"
           disabled={working || !email.trim()}
@@ -84,12 +86,11 @@ export default function SignInPage() {
         >
           {working ? "Sending…" : "Email me a link"}
         </button>
-
-        {err && <p className="text-sm text-ink">{err}</p>}
+        {err && <p className="text-center text-sm text-ink">{err}</p>}
       </form>
 
       <Link href="/" className="text-center text-sm text-muted underline-offset-4 hover:underline">
-        Not now — keep using anonymously
+        Not now — keep going anonymously
       </Link>
     </section>
   );

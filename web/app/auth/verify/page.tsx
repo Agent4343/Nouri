@@ -5,6 +5,7 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { getDeviceId } from "@/lib/device";
 import { track } from "@/lib/track";
+import { LeafMark } from "@/components/LeafMark";
 
 export default function VerifyPage() {
   return (
@@ -47,25 +48,32 @@ function VerifyInner() {
   }, [params, router]);
 
   if (state === "working") {
-    return <p className="pt-6 text-ink">Signing you in…</p>;
+    return (
+      <section className="flex min-h-[68vh] flex-col items-center justify-center gap-4 text-center">
+        <LeafMark className="h-12 w-12" />
+        <p className="text-muted">Signing you in…</p>
+      </section>
+    );
   }
 
   if (state === "ok") {
     return (
-      <section className="flex flex-col gap-3 pt-6">
+      <section className="flex min-h-[68vh] flex-col items-center justify-center gap-3 text-center">
+        <LeafMark className="h-12 w-12" />
         <h1 className="text-2xl font-medium">You're in.</h1>
-        <p className="text-ink">Signed in as {email}. Sending you home…</p>
+        <p className="text-sm text-muted">Signed in as {email}. Taking you home…</p>
       </section>
     );
   }
 
   return (
-    <section className="flex flex-col gap-4 pt-6">
+    <section className="flex min-h-[68vh] flex-col items-center justify-center gap-4 text-center">
+      <LeafMark className="h-12 w-12" />
       <h1 className="text-2xl font-medium">Couldn't sign in</h1>
-      <p className="text-ink">{errMsg}</p>
+      <p className="max-w-xs text-sm text-ink">{errMsg}</p>
       <Link
         href="/auth/sign-in"
-        className="self-start rounded-xl2 bg-sage px-4 py-3 text-cream shadow-sm hover:bg-sageDark"
+        className="rounded-xl2 bg-sage px-5 py-3 text-cream shadow-sm hover:bg-sageDark"
       >
         Try again
       </Link>
