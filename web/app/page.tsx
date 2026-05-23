@@ -7,6 +7,7 @@ import { getDeviceId, hasOnboarded } from "@/lib/device";
 import { DailyTotal } from "@/components/DailyTotal";
 import { MacroSummary } from "@/components/MacroSummary";
 import { MealsByType } from "@/components/MealsByType";
+import { UsualMealCard } from "@/components/UsualMealCard";
 import { WeeklyChart } from "@/components/WeeklyChart";
 import { WeightSummary } from "@/components/WeightSummary";
 import type { TodaySummary } from "@/lib/types";
@@ -69,6 +70,8 @@ export default function HomePage() {
       >
         Snap a meal
       </Link>
+
+      <UsualMealCard onLogged={reload} />
 
       {summary.yesterday.length > 0 && (
         <div className="flex flex-col gap-2">

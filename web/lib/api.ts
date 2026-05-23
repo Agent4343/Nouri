@@ -60,6 +60,10 @@ export const api = {
     request<{ source_meal_id: string; label: string; calories: number }[]>(
       `/meals/recent?device_id=${deviceId}&days=${days}&limit=${limit}`,
     ),
+  mealSuggestion: (deviceId: string, mealType: string) =>
+    request<{ source_meal_id: string; label: string; calories: number } | null>(
+      `/meals/suggestion?device_id=${deviceId}&meal_type=${mealType}`,
+    ),
   deleteMeal: (mealId: string) =>
     fetch(`${API_URL}/meals/${mealId}`, { method: "DELETE" }).then((r) => {
       if (!r.ok) throw new Error(`${r.status}`);

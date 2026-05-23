@@ -14,7 +14,14 @@ export default function CorrectPage() {
   const [meal, setMeal] = useState<Meal | null>(null);
   const [label, setLabel] = useState("");
   const [calories, setCalories] = useState("");
+  const [portion, setPortion] = useState(1);
   const [saving, setSaving] = useState(false);
+
+  function applyPortion(factor: number) {
+    setPortion(factor);
+    if (!meal) return;
+    setCalories(String(Math.round(meal.calories * factor)));
+  }
 
   useEffect(() => {
     // The freshly-logged meal flow lands here from /snap, so we re-fetch today.
@@ -107,6 +114,24 @@ export default function CorrectPage() {
           ))}
         </div>
       )}
+
+      <div className="flex flex-col gap-2">
+        <span className="text-sm text-muted">Portion</span>
+        <div className="grid grid-cols-4 gap-2">
+          {[0.5, 1, 1.5, 2].map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => applyPortion(f)}
+              className={`rounded-xl2 px-3 py-2 text-sm ring-1 ${
+                portion === f ? "bg-sage/15 text-ink ring-sage" : "bg-card text-muted ring-sand"
+              }`}
+            >
+              {f === 0.5 ? "½×" : f === 1 ? "1×" : `${f}×`}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="flex flex-col gap-3 rounded-xl2 bg-card p-4 ring-1 ring-sand">
         <label className="flex flex-col gap-1.5">

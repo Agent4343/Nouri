@@ -298,6 +298,38 @@ async def log_manual(body: ManualMealIn, db: AsyncSession = Depends(get_session)
     return _to_out(meal)
 
 
+@router.get("/suggestion", response_model=YesterdayMeal | None)
+async def meal_suggestion(
+    device_id: UUID,
+    meal_type: str = Query(..., max_length=20),
+    days: int = Query(default=14, ge=1, le=60),
+    db: AsyncSession = Depends(get_session),
+) -> YesterdayMeal | None:
+    """Most-logged meal with the requested meal_type over the last N days.
+
+    Drives the "Usual breakfast?" prompt on home (§14). Returns null if the
+    user hasn't built a pattern for this meal_type yet, in which case the
+    home page just hides the section.
+    """
+    since = datetime.utcnow() - timedelta(days=days)
+    stmt = (
+        select(Meal.label, func.max(Meal.id).label("source_id"), func.max(Meal.calories).label("cal"), func.count().label("hits"))
+        .where(
+            Meal.device_id == device_id,
+            Meal.logged_at >= since,
+            Meal.meal_type == meal_type.lower(),
+        )
+        .group_by(Meal.label)
+        .order_by(func.count().desc())
+        .limit(1)
+    )
+    row = (await db.execute(stmt)).first()
+    if row is None or row.hits < 2:
+        # Require at least 2 logs of the same thing — one log isn't a pattern.
+        return None
+    return YesterdayMeal(source_meal_id=row.source_id, label=row.label, calories=int(row.cal))
+
+
 @router.get("/recent", response_model=list[YesterdayMeal])
 async def recent_meals(
     device_id: UUID,
