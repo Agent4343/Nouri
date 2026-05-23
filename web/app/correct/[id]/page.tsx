@@ -54,13 +54,33 @@ export default function CorrectPage() {
     }
   }
 
+  async function remove() {
+    if (!meal) return;
+    if (!confirm("Remove this meal from today?")) return;
+    setSaving(true);
+    try {
+      await api.deleteMeal(meal.id);
+      router.replace("/");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (!meal) return <div className="text-sm text-muted">Loading…</div>;
 
   const fresh = search.get("fresh") === "1";
   const lowConfidence = meal.confidence < 0.65 && !meal.corrected;
+  const photo = api.photoUrl(meal.photo_url);
 
   return (
     <section className="flex flex-col gap-5 pt-2">
+      {photo && (
+        <div className="overflow-hidden rounded-xl2 ring-1 ring-sand">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photo} alt={meal.label} className="block h-56 w-full object-cover" />
+        </div>
+      )}
+
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-xl font-medium">{fresh ? "Looks like…" : "Edit meal"}</h2>
@@ -123,6 +143,14 @@ export default function CorrectPage() {
           {saving ? "Saving…" : "Save fix"}
         </button>
       </div>
+
+      <button
+        onClick={remove}
+        disabled={saving}
+        className="self-center text-sm text-muted underline-offset-4 hover:underline disabled:opacity-60"
+      >
+        Remove this meal
+      </button>
     </section>
   );
 }

@@ -49,6 +49,10 @@ export const api = {
     body: Partial<Pick<Meal, "label" | "calories" | "protein_g" | "carbs_g" | "fat_g">>,
   ) => request<Meal>(`/meals/${mealId}`, { method: "PATCH", body: JSON.stringify(body) }),
   today: (deviceId: string) => request<TodaySummary>(`/meals/today?device_id=${deviceId}`),
+  deleteMeal: (mealId: string) =>
+    fetch(`${API_URL}/meals/${mealId}`, { method: "DELETE" }).then((r) => {
+      if (!r.ok) throw new Error(`${r.status}`);
+    }),
   listSaved: (deviceId: string) => request<SavedMeal[]>(`/saved?device_id=${deviceId}`),
   createSaved: (body: { device_id: string; name: string; calories: number; protein_g?: number; carbs_g?: number; fat_g?: number }) =>
     request<SavedMeal>("/saved", { method: "POST", body: JSON.stringify(body) }),

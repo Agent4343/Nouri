@@ -130,6 +130,15 @@ async def quick_correct(
     return _to_out(meal)
 
 
+@router.delete("/{meal_id}", status_code=204)
+async def delete_meal(meal_id: UUID, db: AsyncSession = Depends(get_session)) -> None:
+    meal = await db.get(Meal, meal_id)
+    if meal is None:
+        raise HTTPException(404, "meal not found")
+    await db.delete(meal)
+    await db.commit()
+
+
 @router.get("/today", response_model=TodaySummary)
 async def today(device_id: UUID, db: AsyncSession = Depends(get_session)) -> TodaySummary:
     start = datetime.combine(datetime.utcnow().date(), time.min)

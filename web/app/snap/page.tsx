@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { getDeviceId } from "@/lib/device";
+import { compressImage } from "@/lib/imageCompress";
 
 type MealType = "breakfast" | "lunch" | "dinner" | "snack";
 const MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner", "snack"];
@@ -29,11 +30,12 @@ export default function SnapPage() {
   async function onFile(file: File) {
     setErr(null);
     setUploading(true);
-    // Local preview while the upload is in flight.
+    // Local preview while compression + upload are in flight.
     const localUrl = URL.createObjectURL(file);
     setPreviewUrl(localUrl);
     try {
-      const up = await api.uploadPhoto(file);
+      const compressed = await compressImage(file);
+      const up = await api.uploadPhoto(compressed);
       setPhotoId(up.photo_id);
     } catch (e) {
       setErr("Upload failed. Try again in a moment.");
