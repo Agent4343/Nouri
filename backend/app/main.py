@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db import init_db
-from app.routes import meals, photos, profile, saved
+from app.routes import meals, photos, profile, saved, weights
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
@@ -87,3 +87,4 @@ app.include_router(profile.router, prefix="/profile", tags=["profile"])
 app.include_router(meals.router, prefix="/meals", tags=["meals"])
 app.include_router(saved.router, prefix="/saved", tags=["saved"])
 app.include_router(photos.router, prefix="/photos", tags=["photos"])
+app.include_router(weights.router, prefix="/weights", tags=["weights"])

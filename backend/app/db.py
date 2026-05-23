@@ -78,6 +78,15 @@ class SavedMeal(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
 
 
+class WeightLog(Base):
+    __tablename__ = "weight_logs"
+
+    id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), primary_key=True, default=uuid4)
+    device_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), index=True)
+    kg: Mapped[float] = mapped_column(Float)
+    logged_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, index=True)
+
+
 async def init_db() -> None:
     if engine is None:
         raise RuntimeError("engine is not configured (check DATABASE_URL)")

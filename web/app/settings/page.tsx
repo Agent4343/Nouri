@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { getDeviceId } from "@/lib/device";
 import { getUnits, setUnits, lbToKg, ftInToCm, type Units } from "@/lib/units";
+import { WeightLog } from "@/components/WeightLog";
 import type { Profile } from "@/lib/types";
 
 function kgToLbStr(kg: number | null | undefined): string {
@@ -115,6 +116,8 @@ export default function SettingsPage() {
         </div>
         <div className="mt-1 text-xs text-muted">Recalculated whenever you update weight or goal.</div>
       </div>
+
+      <WeightLog />
 
       <div className="flex gap-2">
         {(["metric", "imperial"] as const).map((u) => (

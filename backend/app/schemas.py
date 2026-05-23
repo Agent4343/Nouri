@@ -96,3 +96,14 @@ class SavedMealOut(BaseModel):
 class LogFromSavedIn(BaseModel):
     device_id: UUID
     saved_meal_id: UUID
+
+
+class WeightIn(BaseModel):
+    device_id: UUID
+    kg: float = Field(gt=0, lt=500)
+
+
+class WeightOut(BaseModel):
+    id: UUID
+    kg: float
+    logged_at: datetime

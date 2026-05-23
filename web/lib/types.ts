@@ -51,3 +51,9 @@ export type SavedMeal = {
   carbs_g: number;
   fat_g: number;
 };
+
+export type WeightEntry = {
+  id: string;
+  kg: number;
+  logged_at: string; // ISO timestamp
+};

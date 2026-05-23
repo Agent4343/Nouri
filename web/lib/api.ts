@@ -1,4 +1,4 @@
-import type { Meal, Profile, SavedMeal, TodaySummary } from "./types";
+import type { Meal, Profile, SavedMeal, TodaySummary, WeightEntry } from "./types";
 
 // Calls go through the Next.js rewrite (see next.config.js) — proxied
 // server-side to the backend. No CORS, no baked-in URL.
@@ -58,4 +58,8 @@ export const api = {
     request<SavedMeal>("/saved", { method: "POST", body: JSON.stringify(body) }),
   logFromSaved: (body: { device_id: string; saved_meal_id: string }) =>
     request<Meal>("/saved/log", { method: "POST", body: JSON.stringify(body) }),
+  logWeight: (body: { device_id: string; kg: number }) =>
+    request<WeightEntry>("/weights", { method: "POST", body: JSON.stringify(body) }),
+  listWeights: (deviceId: string, days = 30) =>
+    request<WeightEntry[]>(`/weights?device_id=${deviceId}&days=${days}`),
 };
