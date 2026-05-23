@@ -4,10 +4,22 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { getDeviceId } from "@/lib/device";
 
+type MealType = "breakfast" | "lunch" | "dinner" | "snack";
+const MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner", "snack"];
+
+function defaultMealType(): MealType {
+  const h = new Date().getHours();
+  if (h < 10) return "breakfast";
+  if (h < 14) return "lunch";
+  if (h < 17) return "snack";
+  return "dinner";
+}
+
 export default function SnapPage() {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
   const [hint, setHint] = useState("");
+  const [mealType, setMealType] = useState<MealType>(defaultMealType);
   const [photoId, setPhotoId] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -41,6 +53,7 @@ export default function SnapPage() {
         device_id: getDeviceId(),
         photo_id: photoId ?? undefined,
         hint: hint || undefined,
+        meal_type: mealType,
       });
       router.replace(`/correct/${meal.id}?fresh=1`);
     } catch (e) {
@@ -100,15 +113,35 @@ export default function SnapPage() {
         </div>
       )}
 
-      <label className="flex flex-col gap-1.5">
-        <span className="text-sm text-muted">Hint (optional)</span>
+      <div className="flex flex-col gap-2">
+        <span className="text-sm text-muted">What kind of meal?</span>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {MEAL_TYPES.map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setMealType(m)}
+              className={`rounded-xl2 px-3 py-3 text-sm capitalize ring-1 ${
+                mealType === m ? "bg-sage/15 text-ink ring-sage" : "bg-card text-muted ring-sand"
+              }`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <details className="rounded-xl2 bg-card ring-1 ring-sand">
+        <summary className="cursor-pointer px-4 py-3 text-sm text-muted">
+          Add a detail (optional)
+        </summary>
         <input
           value={hint}
           onChange={(e) => setHint(e.target.value)}
-          placeholder="e.g. chicken bowl"
-          className="rounded-xl2 bg-card px-4 py-3 ring-1 ring-sand outline-none"
+          placeholder="e.g. chicken bowl, oat milk latte"
+          className="block w-full bg-transparent px-4 pb-3 text-ink outline-none"
         />
-      </label>
+      </details>
 
       <button
         onClick={logIt}

@@ -46,6 +46,11 @@ Output rules:
 - Provide up to 3 plausible alternative interpretations if the dish could reasonably be something else
 - Macros must roughly reconcile with calories (4 cal/g protein, 4 cal/g carbs, 9 cal/g fat) within ±15%
 
+If a "Meal type:" hint is provided, use it to bias portion sizing and likely dishes
+(breakfast portions skew smaller and lean toward eggs/cereal/toast; dinner is often the
+largest meal; snacks are typically <300 cal). The hint refines your estimate but never
+overrides what you actually see in the photo.
+
 Style:
 - Labels are short, neutral, no marketing language. Prefer "Salad bowl" over "Fresh garden salad with vibrant greens"
 - Round calories to nearest 10, macros to nearest gram
@@ -67,7 +72,12 @@ def is_configured() -> bool:
     return bool(settings.anthropic_api_key)
 
 
-async def analyze_food(image_bytes: bytes, media_type: str, hint: str | None = None) -> MealGuess:
+async def analyze_food(
+    image_bytes: bytes,
+    media_type: str,
+    hint: str | None = None,
+    meal_type: str | None = None,
+) -> MealGuess:
     """Send an image to Claude and return a validated MealGuess.
 
     Raises on transport errors, schema validation failures, or refusals.
@@ -77,6 +87,8 @@ async def analyze_food(image_bytes: bytes, media_type: str, hint: str | None = N
     client = _get_client()
 
     user_text = "Analyze this meal. Return calories, macros, confidence, and up to 3 alternative interpretations."
+    if meal_type:
+        user_text += f"\n\nMeal type: {meal_type.strip()[:20]}"
     if hint:
         user_text += f"\n\nUser hint: {hint.strip()[:200]}"
 

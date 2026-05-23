@@ -24,7 +24,9 @@ log = logging.getLogger("nouri.meals")
 router = APIRouter()
 
 
-async def _vision_for(photo_id: str | None, hint: str | None) -> tuple[VisionGuess, str | None]:
+async def _vision_for(
+    photo_id: str | None, hint: str | None, meal_type: str | None
+) -> tuple[VisionGuess, str | None]:
     """Run vision for the given inputs. Returns (guess, photo_url_or_None).
 
     Real Claude vision when a photo is uploaded AND the API key is set.
@@ -32,13 +34,15 @@ async def _vision_for(photo_id: str | None, hint: str | None) -> tuple[VisionGue
     Story Bible §6: failures stay calm; the loop never breaks because
     the vision provider is down.
     """
+    combined_hint = " · ".join(p for p in (meal_type, hint) if p) or None
+
     if photo_id and claude_configured():
         path = find_photo_path(photo_id)
         if path is None:
             raise HTTPException(404, "photo not found")
         try:
             image_bytes = path.read_bytes()
-            mg = await analyze_food(image_bytes, media_type_for(path), hint)
+            mg = await analyze_food(image_bytes, media_type_for(path), hint=hint, meal_type=meal_type)
             real = VisionGuess(
                 label=mg.label,
                 calories=mg.calories,
@@ -53,11 +57,11 @@ async def _vision_for(photo_id: str | None, hint: str | None) -> tuple[VisionGue
             raise
         except Exception as e:
             log.warning("vision call failed, falling back to mock: %s", e)
-            return mock_guess(seed=photo_id, hint=hint), f"/photos/{photo_id}"
+            return mock_guess(seed=photo_id, hint=combined_hint), f"/photos/{photo_id}"
 
     # No photo, no API key, or API key set but no photo → mock
     photo_url = f"/photos/{photo_id}" if photo_id and find_photo_path(photo_id) else None
-    return mock_guess(seed=photo_id, hint=hint), photo_url
+    return mock_guess(seed=photo_id, hint=combined_hint), photo_url
 
 
 def _to_out(meal: Meal, alternatives: list[MealAlternative] | None = None) -> MealOut:
@@ -80,7 +84,7 @@ def _to_out(meal: Meal, alternatives: list[MealAlternative] | None = None) -> Me
 
 @router.post("", response_model=MealOut)
 async def log_meal(body: MealIn, db: AsyncSession = Depends(get_session)) -> MealOut:
-    g, photo_url = await _vision_for(body.photo_id, body.hint)
+    g, photo_url = await _vision_for(body.photo_id, body.hint, body.meal_type)
     meal = Meal(
         id=uuid4(),
         device_id=body.device_id,

@@ -42,7 +42,7 @@ export const api = {
     if (/^https?:\/\//.test(relativeOrAbsolute)) return relativeOrAbsolute;
     return `${API_URL}${relativeOrAbsolute}`;
   },
-  snap: (body: { device_id: string; photo_id?: string; hint?: string }) =>
+  snap: (body: { device_id: string; photo_id?: string; hint?: string; meal_type?: string }) =>
     request<Meal>("/meals", { method: "POST", body: JSON.stringify(body) }),
   correct: (
     mealId: string,

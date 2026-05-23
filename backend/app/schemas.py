@@ -29,6 +29,7 @@ class MealAlternative(BaseModel):
 class MealIn(BaseModel):
     device_id: UUID
     photo_id: str | None = None  # from POST /photos
+    meal_type: str | None = Field(default=None, max_length=20)  # breakfast|lunch|dinner|snack
     hint: str | None = None  # optional text hint from user
 
 
