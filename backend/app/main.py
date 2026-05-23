@@ -8,10 +8,35 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db import init_db
+
+
+# Sentry initializes at import time so it catches startup errors too. If
+# SENTRY_DSN isn't set, this silently no-ops.
+def _init_sentry() -> bool:
+    if not settings.sentry_dsn:
+        return False
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.fastapi import FastApiIntegration
+
+        sentry_sdk.init(
+            dsn=settings.sentry_dsn,
+            environment=settings.sentry_environment,
+            integrations=[FastApiIntegration()],
+            traces_sample_rate=0.1,
+            send_default_pii=False,
+        )
+        return True
+    except Exception:
+        # Don't let Sentry init failure block app boot.
+        return False
+
+
+_sentry_on = _init_sentry()
 from app.auth import get_auth_secret
 from app.cleanup import run_photo_cleanup
 from app.push import get_vapid_keys, run_due_reminders
-from app.routes import auth, barcode, meals, photos, profile, push, saved, weights
+from app.routes import auth, barcode, events, meals, photos, profile, push, saved, weights
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -87,6 +112,7 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(run_photo_cleanup, "interval", hours=24, id="photo_cleanup", coalesce=True, max_instances=1)
     scheduler.start()
     log.info("startup: schedulers running (reminders 10m, photo cleanup 24h)")
+    log.info("startup: sentry=%s", "on" if _sentry_on else "off")
 
     try:
         yield
@@ -126,3 +152,4 @@ app.include_router(weights.router, prefix="/weights", tags=["weights"])
 app.include_router(barcode.router, prefix="/barcode", tags=["barcode"])
 app.include_router(push.router, prefix="/push", tags=["push"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(events.router, prefix="/events", tags=["events"])

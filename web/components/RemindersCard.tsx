@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { getDeviceId } from "@/lib/device";
 import { pushSupported, subscribeForReminders, unsubscribeReminders } from "@/lib/push";
+import { track } from "@/lib/track";
 
 const HOURS = Array.from({ length: 24 }, (_, h) => h);
 
@@ -42,6 +43,7 @@ export function RemindersCard() {
     try {
       await subscribeForReminders(hour);
       setEnabled(true);
+      track("reminders_enabled", { hour_local: hour });
       setInfo("Reminders on. Quiet check-in around " + formatHour(hour) + ".");
     } catch (e: unknown) {
       setErr(

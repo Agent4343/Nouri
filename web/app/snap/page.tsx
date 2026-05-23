@@ -5,6 +5,7 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { getDeviceId } from "@/lib/device";
 import { compressImage } from "@/lib/imageCompress";
+import { track } from "@/lib/track";
 
 type RecentChip = { source_meal_id: string; label: string; calories: number };
 
@@ -98,6 +99,12 @@ export default function SnapPage() {
         hint: hint || undefined,
         meal_type: mealType,
         logged_at: resolveWhen(when, customWhen),
+      });
+      track("meal_logged", {
+        source: photoId ? "photo" : "manual",
+        meal_type: mealType,
+        confidence: meal.confidence,
+        backfilled: when !== "now",
       });
       router.replace(`/correct/${meal.id}?fresh=1`);
     } catch (e) {

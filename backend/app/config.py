@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     # link emails so the user lands on the right host.
     public_web_url: str = "http://localhost:3000"
 
+    # Error monitoring. If unset, Sentry is silently disabled.
+    sentry_dsn: str = ""
+    sentry_environment: str = "production"
+
     def model_post_init(self, __context: object) -> None:
         # Strip whitespace from any env-pasted value. Railway's UI has bitten us
         # repeatedly by preserving trailing newlines on copy-paste — they break
@@ -47,6 +51,8 @@ class Settings(BaseSettings):
             "resend_api_key",
             "email_from",
             "public_web_url",
+            "sentry_dsn",
+            "sentry_environment",
         ):
             v = getattr(self, field, None)
             if isinstance(v, str):

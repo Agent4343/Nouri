@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { getDeviceId } from "@/lib/device";
+import { track } from "@/lib/track";
 
 export default function VerifyPage() {
   return (
@@ -32,6 +33,7 @@ function VerifyInner() {
       .then((me) => {
         setEmail(me.email);
         setState("ok");
+        track("sign_in_completed");
         setTimeout(() => router.replace("/"), 1500);
       })
       .catch((e) => {

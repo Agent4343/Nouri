@@ -11,3 +11,4 @@ apscheduler==3.10.4
 pywebpush==2.0.0
 cryptography==43.0.1
 email-validator==2.2.0
+sentry-sdk[fastapi]==2.18.0

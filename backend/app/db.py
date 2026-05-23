@@ -3,7 +3,7 @@ from collections.abc import AsyncIterator
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, Float, ForeignKey, String, Boolean, text
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, String, Boolean, text
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -111,6 +111,20 @@ class DeviceLink(Base):
     device_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), primary_key=True)
     user_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), ForeignKey("users.id"), index=True)
     linked_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+class AppEvent(Base):
+    """Lightweight in-DB analytics. Web posts events for key moments
+    (snap_logged, sign_in, reminder_subscribed, etc.) so we can compute
+    DAU/MAU/retention without bringing in a third-party tracker yet."""
+
+    __tablename__ = "app_events"
+
+    id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), primary_key=True, default=uuid4)
+    device_id: Mapped[UUID] = mapped_column(PgUUID(as_uuid=True), index=True)
+    type: Mapped[str] = mapped_column(String(64), index=True)
+    data: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, index=True)
 
 
 class PushSubscription(Base):
