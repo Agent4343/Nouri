@@ -9,6 +9,8 @@ import { compressImage } from "@/lib/imageCompress";
 type MealType = "breakfast" | "lunch" | "dinner" | "snack";
 const MEAL_TYPES: MealType[] = ["breakfast", "lunch", "dinner", "snack"];
 
+type WhenPreset = "now" | "1h" | "earlier" | "yesterday";
+
 function defaultMealType(): MealType {
   const h = new Date().getHours();
   if (h < 10) return "breakfast";
@@ -17,11 +19,28 @@ function defaultMealType(): MealType {
   return "dinner";
 }
 
+function resolveWhen(preset: WhenPreset, customISO: string): string | undefined {
+  if (preset === "now") return undefined; // backend defaults to now
+  const now = new Date();
+  if (preset === "1h") return new Date(now.getTime() - 60 * 60 * 1000).toISOString();
+  if (preset === "yesterday") {
+    const d = new Date(now);
+    d.setDate(d.getDate() - 1);
+    d.setHours(12, 0, 0, 0); // noon yesterday is a reasonable anchor
+    return d.toISOString();
+  }
+  // "earlier" — custom datetime-local value (browser-local) → ISO
+  if (!customISO) return undefined;
+  return new Date(customISO).toISOString();
+}
+
 export default function SnapPage() {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
   const [hint, setHint] = useState("");
   const [mealType, setMealType] = useState<MealType>(defaultMealType);
+  const [when, setWhen] = useState<WhenPreset>("now");
+  const [customWhen, setCustomWhen] = useState<string>("");
   const [photoId, setPhotoId] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -57,6 +76,7 @@ export default function SnapPage() {
         photo_id: photoId ?? undefined,
         hint: hint || undefined,
         meal_type: mealType,
+        logged_at: resolveWhen(when, customWhen),
       });
       router.replace(`/correct/${meal.id}?fresh=1`);
     } catch (e) {
@@ -115,6 +135,32 @@ export default function SnapPage() {
           </button>
         </div>
       )}
+
+      <div className="flex flex-col gap-2">
+        <span className="text-sm text-muted">When was this?</span>
+        <div className="grid grid-cols-4 gap-2">
+          {(["now", "1h", "earlier", "yesterday"] as const).map((w) => (
+            <button
+              key={w}
+              type="button"
+              onClick={() => setWhen(w)}
+              className={`rounded-xl2 px-2 py-2 text-xs ring-1 ${
+                when === w ? "bg-sage/15 text-ink ring-sage" : "bg-card text-muted ring-sand"
+              }`}
+            >
+              {w === "now" ? "Now" : w === "1h" ? "1h ago" : w === "earlier" ? "Earlier" : "Yesterday"}
+            </button>
+          ))}
+        </div>
+        {when === "earlier" && (
+          <input
+            type="datetime-local"
+            value={customWhen}
+            onChange={(e) => setCustomWhen(e.target.value)}
+            className="rounded-xl2 bg-card px-4 py-2 text-sm text-ink ring-1 ring-sand outline-none"
+          />
+        )}
+      </div>
 
       <div className="flex flex-col gap-2">
         <span className="text-sm text-muted">What kind of meal?</span>

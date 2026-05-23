@@ -42,8 +42,13 @@ export const api = {
     if (/^https?:\/\//.test(relativeOrAbsolute)) return relativeOrAbsolute;
     return `${API_URL}${relativeOrAbsolute}`;
   },
-  snap: (body: { device_id: string; photo_id?: string; hint?: string; meal_type?: string }) =>
-    request<Meal>("/meals", { method: "POST", body: JSON.stringify(body) }),
+  snap: (body: {
+    device_id: string;
+    photo_id?: string;
+    hint?: string;
+    meal_type?: string;
+    logged_at?: string;
+  }) => request<Meal>("/meals", { method: "POST", body: JSON.stringify(body) }),
   correct: (
     mealId: string,
     body: Partial<Pick<Meal, "label" | "calories" | "protein_g" | "carbs_g" | "fat_g">>,

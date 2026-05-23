@@ -89,6 +89,7 @@ def _to_out(meal: Meal, alternatives: list[MealAlternative] | None = None) -> Me
 @router.post("", response_model=MealOut)
 async def log_meal(body: MealIn, db: AsyncSession = Depends(get_session)) -> MealOut:
     g, photo_url = await _vision_for(body.photo_id, body.hint, body.meal_type)
+    when = _resolve_logged_at(body.logged_at)
     meal = Meal(
         id=uuid4(),
         device_id=body.device_id,
@@ -100,12 +101,28 @@ async def log_meal(body: MealIn, db: AsyncSession = Depends(get_session)) -> Mea
         confidence=g.confidence,
         photo_url=photo_url,
         source="photo" if photo_url else "manual",
+        logged_at=when,
     )
     db.add(meal)
     await db.commit()
     await db.refresh(meal)
     alternatives = [MealAlternative(label=lbl, calories=cal) for lbl, cal in g.alternatives]
     return _to_out(meal, alternatives)
+
+
+def _resolve_logged_at(provided: datetime | None) -> datetime:
+    """Clamp backfill timestamps to the last 14 days and never let them be future-dated."""
+    if provided is None:
+        return datetime.utcnow()
+    now = datetime.utcnow()
+    # Strip timezone for comparison — DB stores naive UTC.
+    naive = provided.replace(tzinfo=None) if provided.tzinfo else provided
+    if naive > now:
+        return now
+    earliest = now - timedelta(days=14)
+    if naive < earliest:
+        return earliest
+    return naive
 
 
 @router.patch("/{meal_id}", response_model=MealOut)
@@ -252,6 +269,7 @@ async def log_manual(body: ManualMealIn, db: AsyncSession = Depends(get_session)
         photo_url=None,
         source=source,
         corrected=False,
+        logged_at=_resolve_logged_at(body.logged_at),
     )
     db.add(meal)
     await db.commit()

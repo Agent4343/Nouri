@@ -31,6 +31,7 @@ class MealIn(BaseModel):
     photo_id: str | None = None  # from POST /photos
     meal_type: str | None = Field(default=None, max_length=20)  # breakfast|lunch|dinner|snack
     hint: str | None = None  # optional text hint from user
+    logged_at: datetime | None = None  # backfill — defaults to "now"
 
 
 class MealOut(BaseModel):
@@ -120,6 +121,7 @@ class ManualMealIn(BaseModel):
     carbs_g: float = Field(default=0, ge=0)
     fat_g: float = Field(default=0, ge=0)
     source: str = Field(default="manual", max_length=32)  # "manual" | "barcode"
+    logged_at: datetime | None = None  # backfill
 
 
 class WeightIn(BaseModel):
