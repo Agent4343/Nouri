@@ -3,7 +3,7 @@ from collections.abc import AsyncIterator
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, Float, ForeignKey, String, Boolean
+from sqlalchemy import DateTime, Float, ForeignKey, String, Boolean, text
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -59,7 +59,8 @@ class Meal(Base):
     fat_g: Mapped[float] = mapped_column(Float, default=0)
     confidence: Mapped[float] = mapped_column(Float)
     photo_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
-    source: Mapped[str] = mapped_column(String(32), default="photo")  # photo|saved|manual
+    source: Mapped[str] = mapped_column(String(32), default="photo")  # photo|saved|manual|barcode|repeat
+    meal_type: Mapped[str | None] = mapped_column(String(20), nullable=True)  # breakfast|lunch|dinner|snack
     corrected: Mapped[bool] = mapped_column(Boolean, default=False)
     logged_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, index=True)
 
@@ -136,6 +137,13 @@ async def init_db() -> None:
         raise RuntimeError("engine is not configured (check DATABASE_URL)")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Lightweight self-migration for additive columns. Idempotent —
+        # ADD COLUMN IF NOT EXISTS is a no-op when the column already exists.
+        # Once schema churn slows we'll move to Alembic.
+        for stmt in [
+            "ALTER TABLE meals ADD COLUMN IF NOT EXISTS meal_type VARCHAR(20)",
+        ]:
+            await conn.execute(text(stmt))
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:

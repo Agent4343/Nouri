@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { getDeviceId, hasOnboarded } from "@/lib/device";
 import { DailyTotal } from "@/components/DailyTotal";
 import { MacroSummary } from "@/components/MacroSummary";
-import { MealCard } from "@/components/MealCard";
+import { MealsByType } from "@/components/MealsByType";
 import { WeeklyChart } from "@/components/WeeklyChart";
 import { WeightSummary } from "@/components/WeightSummary";
 import type { TodaySummary } from "@/lib/types";
@@ -93,11 +93,7 @@ export default function HomePage() {
           Nothing logged yet. Whenever you're ready.
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
-          {summary.meals.map((m) => (
-            <MealCard key={m.id} meal={m} />
-          ))}
-        </div>
+        <MealsByType meals={summary.meals} />
       )}
 
       <WeightSummary />

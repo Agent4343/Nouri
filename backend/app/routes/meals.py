@@ -80,6 +80,7 @@ def _to_out(meal: Meal, alternatives: list[MealAlternative] | None = None) -> Me
         confidence=meal.confidence,
         photo_url=meal.photo_url,
         source=meal.source,
+        meal_type=meal.meal_type,
         corrected=meal.corrected,
         logged_at=meal.logged_at,
         alternatives=alternatives or [],
@@ -101,6 +102,7 @@ async def log_meal(body: MealIn, db: AsyncSession = Depends(get_session)) -> Mea
         confidence=g.confidence,
         photo_url=photo_url,
         source="photo" if photo_url else "manual",
+        meal_type=body.meal_type,
         logged_at=when,
     )
     db.add(meal)
@@ -156,8 +158,27 @@ async def delete_meal(meal_id: UUID, db: AsyncSession = Depends(get_session)) ->
     meal = await db.get(Meal, meal_id)
     if meal is None:
         raise HTTPException(404, "meal not found")
+
+    # If this meal owns a photo and no other meal references it, remove the
+    # file from disk. Photos can be shared (e.g. repeat-meal clones the
+    # photo_url), so only delete when this was the last reference.
+    photo_url = meal.photo_url
     await db.delete(meal)
     await db.commit()
+
+    if photo_url and photo_url.startswith("/photos/"):
+        photo_id = photo_url.removeprefix("/photos/")
+        others = await db.scalar(
+            select(Meal).where(Meal.photo_url == photo_url).limit(1)
+        )
+        if others is None:
+            path = find_photo_path(photo_id)
+            if path is not None:
+                try:
+                    path.unlink()
+                    log.info("removed orphan photo %s", path.name)
+                except Exception as e:
+                    log.warning("photo unlink failed for %s: %s", photo_id, e)
 
 
 @router.get("/today", response_model=TodaySummary)
@@ -294,6 +315,7 @@ async def repeat_meal(body: RepeatMealIn, db: AsyncSession = Depends(get_session
         confidence=1.0,
         photo_url=source.photo_url,
         source="repeat",
+        meal_type=source.meal_type,
         corrected=False,
     )
     db.add(clone)

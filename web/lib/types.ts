@@ -19,7 +19,8 @@ export type Meal = {
   fat_g: number;
   confidence: number;
   photo_url: string | null;
-  source: "photo" | "saved" | "manual";
+  source: "photo" | "saved" | "manual" | "barcode" | "repeat";
+  meal_type: "breakfast" | "lunch" | "dinner" | "snack" | null;
   corrected: boolean;
   logged_at: string;
   alternatives?: MealAlternative[];

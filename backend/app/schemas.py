@@ -45,6 +45,7 @@ class MealOut(BaseModel):
     confidence: float
     photo_url: str | None
     source: str
+    meal_type: str | None = None
     corrected: bool
     logged_at: datetime
     alternatives: list[MealAlternative] = []
