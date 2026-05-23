@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { api } from "@/lib/api";
 import { getDeviceId } from "@/lib/device";
 import { compressImage } from "@/lib/imageCompress";
@@ -154,6 +155,13 @@ export default function SnapPage() {
       </button>
 
       {err && <p className="text-sm text-ink">{err}</p>}
+
+      <Link
+        href="/scan"
+        className="self-center text-sm text-muted underline-offset-4 hover:underline"
+      >
+        Or scan a barcode
+      </Link>
     </section>
   );
 }

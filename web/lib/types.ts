@@ -64,3 +64,15 @@ export type WeightEntry = {
   kg: number;
   logged_at: string; // ISO timestamp
 };
+
+export type BarcodeProduct = {
+  barcode: string;
+  label: string;
+  brand: string | null;
+  serving_size_g: number | null;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  per: "serving" | "100g";
+};

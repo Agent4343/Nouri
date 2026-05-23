@@ -112,6 +112,16 @@ class RepeatMealIn(BaseModel):
     source_meal_id: UUID
 
 
+class ManualMealIn(BaseModel):
+    device_id: UUID
+    label: str = Field(min_length=1, max_length=120)
+    calories: int = Field(ge=0, le=5000)
+    protein_g: float = Field(default=0, ge=0)
+    carbs_g: float = Field(default=0, ge=0)
+    fat_g: float = Field(default=0, ge=0)
+    source: str = Field(default="manual", max_length=32)  # "manual" | "barcode"
+
+
 class WeightIn(BaseModel):
     device_id: UUID
     kg: float = Field(gt=0, lt=500)

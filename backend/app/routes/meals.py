@@ -10,6 +10,7 @@ from app.copy import daily_message
 from app.db import Meal, Profile, get_session
 from app.routes.photos import find_photo_path, media_type_for
 from app.schemas import (
+    ManualMealIn,
     MealAlternative,
     MealCorrection,
     MealIn,
@@ -233,6 +234,29 @@ async def today(device_id: UUID, db: AsyncSession = Depends(get_session)) -> Tod
         days_since_last_log=days_since,
         yesterday=yesterday,
     )
+
+
+@router.post("/manual", response_model=MealOut)
+async def log_manual(body: ManualMealIn, db: AsyncSession = Depends(get_session)) -> MealOut:
+    """Log a meal from barcode lookup or manual entry — bypasses vision."""
+    source = body.source if body.source in {"manual", "barcode"} else "manual"
+    meal = Meal(
+        id=uuid4(),
+        device_id=body.device_id,
+        label=body.label,
+        calories=body.calories,
+        protein_g=body.protein_g,
+        carbs_g=body.carbs_g,
+        fat_g=body.fat_g,
+        confidence=1.0,
+        photo_url=None,
+        source=source,
+        corrected=False,
+    )
+    db.add(meal)
+    await db.commit()
+    await db.refresh(meal)
+    return _to_out(meal)
 
 
 @router.post("/repeat", response_model=MealOut)
