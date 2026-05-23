@@ -18,8 +18,8 @@ from app.config import settings
 log = logging.getLogger("nouri.email")
 
 
-async def send_magic_link(email: str, link: str) -> bool:
-    """Send a sign-in link. Returns True on success.
+async def send_magic_link(email: str, link: str) -> tuple[bool, str | None]:
+    """Send a sign-in link. Returns (ok, error_detail).
 
     Falls back to logging the link if no provider is configured — useful in
     dev, surprising in prod, so we log loudly.
@@ -33,10 +33,10 @@ async def send_magic_link(email: str, link: str) -> bool:
         email,
         link,
     )
-    return True
+    return True, None
 
 
-async def _send_via_resend(email: str, link: str) -> bool:
+async def _send_via_resend(email: str, link: str) -> tuple[bool, str | None]:
     body = {
         "from": settings.email_from,
         "to": [email],
@@ -63,9 +63,10 @@ async def _send_via_resend(email: str, link: str) -> bool:
                 headers={"Authorization": f"Bearer {settings.resend_api_key}"},
             )
         if r.status_code >= 400:
-            log.warning("Resend rejected (%s): %s", r.status_code, r.text[:200])
-            return False
-        return True
+            snippet = r.text[:300]
+            log.warning("Resend rejected (%s): %s", r.status_code, snippet)
+            return False, f"resend {r.status_code}: {snippet}"
+        return True, None
     except Exception as e:
         log.warning("Resend transport error: %s", e)
-        return False
+        return False, f"transport error: {e}"

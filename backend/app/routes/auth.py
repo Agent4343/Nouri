@@ -37,9 +37,9 @@ async def start_email_auth(body: StartIn) -> dict[str, bool]:
     token = make_token(email)
     web = settings.public_web_url.rstrip("/")
     link = f"{web}/auth/verify?token={token}"
-    ok = await send_magic_link(email, link)
+    ok, detail = await send_magic_link(email, link)
     if not ok:
-        raise HTTPException(503, "couldn't send sign-in email")
+        raise HTTPException(503, detail or "couldn't send sign-in email")
     return {"sent": True}
 
 

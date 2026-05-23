@@ -18,7 +18,8 @@ export default function SignInPage() {
       await api.authStart(email.trim().toLowerCase());
       setSent(true);
     } catch (e: unknown) {
-      setErr("Couldn't send the link. Try again in a moment.");
+      const msg = e instanceof Error ? e.message : String(e);
+      setErr("Email send failed. " + msg);
     } finally {
       setWorking(false);
     }
