@@ -2,8 +2,9 @@ import type { TodaySummary } from "@/lib/types";
 
 export function DailyTotal({ summary }: { summary: TodaySummary }) {
   const { total_calories, target_calories, message } = summary;
-  // No red. No alarm bars. Soft fill, capped at 100% visually (§9).
   const pct = target_calories ? Math.min(100, Math.round((total_calories / target_calories) * 100)) : 0;
+  const remaining = target_calories ? target_calories - total_calories : null;
+
   return (
     <section className="rounded-xl2 bg-card p-5 shadow-sm ring-1 ring-sand">
       <div className="flex items-end justify-between">
@@ -16,6 +17,16 @@ export function DailyTotal({ summary }: { summary: TodaySummary }) {
             </span>
           </div>
         </div>
+        {remaining != null && (
+          <div className="text-right">
+            <div className="text-xs text-muted">
+              {remaining > 0 ? "remaining" : remaining === 0 ? "at target" : "over"}
+            </div>
+            <div className="text-lg font-medium text-ink">
+              {remaining > 0 ? remaining : remaining < 0 ? Math.abs(remaining) : "—"}
+            </div>
+          </div>
+        )}
       </div>
       {target_calories && (
         <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-sand">

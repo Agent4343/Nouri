@@ -5,8 +5,10 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import { getDeviceId, hasOnboarded } from "@/lib/device";
 import { DailyTotal } from "@/components/DailyTotal";
+import { MacroSummary } from "@/components/MacroSummary";
 import { MealCard } from "@/components/MealCard";
 import { WeeklyChart } from "@/components/WeeklyChart";
+import { WeightSummary } from "@/components/WeightSummary";
 import type { TodaySummary } from "@/lib/types";
 
 export default function HomePage() {
@@ -59,6 +61,8 @@ export default function HomePage() {
     <div className="flex flex-col gap-5">
       <DailyTotal summary={summary} />
 
+      <MacroSummary summary={summary} />
+
       <Link
         href="/snap"
         className="block rounded-xl2 bg-sage px-5 py-4 text-center text-cream shadow-sm transition hover:bg-sageDark"
@@ -95,6 +99,8 @@ export default function HomePage() {
           ))}
         </div>
       )}
+
+      <WeightSummary />
 
       <WeeklyChart week={summary.week} target={summary.target_calories} />
     </div>
