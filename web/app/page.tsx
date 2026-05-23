@@ -13,15 +13,35 @@ export default function HomePage() {
   const router = useRouter();
   const [summary, setSummary] = useState<TodaySummary | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [relogging, setRelogging] = useState<string | null>(null);
+
+  async function reload() {
+    const deviceId = getDeviceId();
+    try {
+      setSummary(await api.today(deviceId));
+    } catch (e) {
+      setError(String(e));
+    }
+  }
 
   useEffect(() => {
     if (!hasOnboarded()) {
       router.replace("/onboarding");
       return;
     }
-    const deviceId = getDeviceId();
-    api.today(deviceId).then(setSummary).catch((e) => setError(String(e)));
+    reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
+
+  async function repeat(sourceMealId: string) {
+    setRelogging(sourceMealId);
+    try {
+      await api.repeatMeal({ device_id: getDeviceId(), source_meal_id: sourceMealId });
+      await reload();
+    } finally {
+      setRelogging(null);
+    }
+  }
 
   if (error) {
     return (
@@ -45,6 +65,24 @@ export default function HomePage() {
       >
         Snap a meal
       </Link>
+
+      {summary.yesterday.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <div className="text-sm text-muted">Had this yesterday?</div>
+          <div className="flex flex-wrap gap-2">
+            {summary.yesterday.map((y) => (
+              <button
+                key={y.source_meal_id}
+                onClick={() => repeat(y.source_meal_id)}
+                disabled={relogging !== null}
+                className="rounded-full bg-card px-3 py-1.5 text-sm text-ink ring-1 ring-sand hover:bg-cream disabled:opacity-60"
+              >
+                {relogging === y.source_meal_id ? "Logging…" : `${y.label} · ${y.calories} cal`}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {summary.meals.length === 0 ? (
         <div className="rounded-xl2 bg-card p-5 text-sm text-ink ring-1 ring-sand">

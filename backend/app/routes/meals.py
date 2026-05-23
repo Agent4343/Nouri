@@ -14,8 +14,10 @@ from app.schemas import (
     MealCorrection,
     MealIn,
     MealOut,
+    RepeatMealIn,
     TodaySummary,
     WeeklyDayTotal,
+    YesterdayMeal,
 )
 from app.vision import VisionGuess, guess as mock_guess
 from app.vision_claude import analyze_food, is_configured as claude_configured
@@ -181,6 +183,30 @@ async def today(device_id: UUID, db: AsyncSession = Depends(get_session)) -> Tod
         d = today_date - timedelta(days=offset)
         week.append(WeeklyDayTotal(date=d.isoformat(), calories=rows_by_day.get(d, 0)))
 
+    # Yesterday's meals, deduped by label (most recent meal wins) — fuel for
+    # the "Repeat yesterday" surface (§14).
+    yesterday_start = today_start - timedelta(days=1)
+    yesterday_stmt = (
+        select(Meal)
+        .where(
+            Meal.device_id == device_id,
+            Meal.logged_at >= yesterday_start,
+            Meal.logged_at < today_start,
+        )
+        .order_by(Meal.logged_at.desc())
+    )
+    yesterday_rows = (await db.scalars(yesterday_stmt)).all()
+    seen_labels: set[str] = set()
+    yesterday: list[YesterdayMeal] = []
+    for m in yesterday_rows:
+        key = m.label.strip().lower()
+        if key in seen_labels:
+            continue
+        seen_labels.add(key)
+        yesterday.append(YesterdayMeal(source_meal_id=m.id, label=m.label, calories=m.calories))
+        if len(yesterday) >= 6:
+            break
+
     # How long since the most recent log? 0 if anything today, else N days back.
     last_stmt = (
         select(Meal.logged_at)
@@ -205,4 +231,30 @@ async def today(device_id: UUID, db: AsyncSession = Depends(get_session)) -> Tod
         message=daily_message(total_cal, target, days_since),
         week=week,
         days_since_last_log=days_since,
+        yesterday=yesterday,
     )
+
+
+@router.post("/repeat", response_model=MealOut)
+async def repeat_meal(body: RepeatMealIn, db: AsyncSession = Depends(get_session)) -> MealOut:
+    """Relog a prior meal as-is. Bypasses AI (§21) — user has already confirmed it before."""
+    source = await db.get(Meal, body.source_meal_id)
+    if source is None or source.device_id != body.device_id:
+        raise HTTPException(404, "source meal not found")
+    clone = Meal(
+        id=uuid4(),
+        device_id=body.device_id,
+        label=source.label,
+        calories=source.calories,
+        protein_g=source.protein_g,
+        carbs_g=source.carbs_g,
+        fat_g=source.fat_g,
+        confidence=1.0,
+        photo_url=source.photo_url,
+        source="repeat",
+        corrected=False,
+    )
+    db.add(clone)
+    await db.commit()
+    await db.refresh(clone)
+    return _to_out(clone)

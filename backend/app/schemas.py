@@ -62,6 +62,14 @@ class WeeklyDayTotal(BaseModel):
     calories: int
 
 
+class YesterdayMeal(BaseModel):
+    """Dedup'd preview of yesterday's meals — fuel for the "Repeat yesterday" chips (§14)."""
+
+    source_meal_id: UUID
+    label: str
+    calories: int
+
+
 class TodaySummary(BaseModel):
     device_id: UUID
     total_calories: int
@@ -73,6 +81,7 @@ class TodaySummary(BaseModel):
     message: str  # forgiving daily-total framing
     week: list[WeeklyDayTotal]  # last 7 days including today, oldest first
     days_since_last_log: int  # 0 if logged today, 1 if last log was yesterday, etc.
+    yesterday: list[YesterdayMeal]  # unique by label, most recent first; empty if none
 
 
 class SavedMealIn(BaseModel):
@@ -96,6 +105,11 @@ class SavedMealOut(BaseModel):
 class LogFromSavedIn(BaseModel):
     device_id: UUID
     saved_meal_id: UUID
+
+
+class RepeatMealIn(BaseModel):
+    device_id: UUID
+    source_meal_id: UUID
 
 
 class WeightIn(BaseModel):

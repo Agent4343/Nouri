@@ -49,6 +49,8 @@ export const api = {
     body: Partial<Pick<Meal, "label" | "calories" | "protein_g" | "carbs_g" | "fat_g">>,
   ) => request<Meal>(`/meals/${mealId}`, { method: "PATCH", body: JSON.stringify(body) }),
   today: (deviceId: string) => request<TodaySummary>(`/meals/today?device_id=${deviceId}`),
+  repeatMeal: (body: { device_id: string; source_meal_id: string }) =>
+    request<Meal>("/meals/repeat", { method: "POST", body: JSON.stringify(body) }),
   deleteMeal: (mealId: string) =>
     fetch(`${API_URL}/meals/${mealId}`, { method: "DELETE" }).then((r) => {
       if (!r.ok) throw new Error(`${r.status}`);
