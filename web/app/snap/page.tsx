@@ -79,6 +79,7 @@ export default function SnapPage() {
       const compressed = await compressImage(file);
       const up = await api.uploadPhoto(compressed);
       setPhotoId(up.photo_id);
+      track("photo_uploaded");
     } catch (e) {
       setErr("Upload failed. Try again in a moment.");
       setPhotoId(null);

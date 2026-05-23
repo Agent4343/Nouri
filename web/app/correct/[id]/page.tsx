@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { getDeviceId } from "@/lib/device";
+import { track } from "@/lib/track";
 import { ConfidenceBadge } from "@/components/ConfidenceBadge";
 import type { Meal } from "@/lib/types";
 
@@ -44,6 +45,7 @@ export default function CorrectPage() {
         label: label !== meal.label ? label : undefined,
         calories: Number(calories) !== meal.calories ? Number(calories) : undefined,
       });
+      track("meal_corrected", { via: "form", portion });
       router.replace("/");
     } finally {
       setSaving(false);
@@ -55,6 +57,7 @@ export default function CorrectPage() {
     setSaving(true);
     try {
       await api.correct(meal.id, { label: alt.label, calories: alt.calories });
+      track("meal_corrected", { via: "alternative" });
       router.replace("/");
     } finally {
       setSaving(false);
@@ -67,6 +70,7 @@ export default function CorrectPage() {
     setSaving(true);
     try {
       await api.deleteMeal(meal.id);
+      track("meal_deleted");
       router.replace("/");
     } finally {
       setSaving(false);

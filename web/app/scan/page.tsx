@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { getDeviceId } from "@/lib/device";
+import { track } from "@/lib/track";
 import type { BarcodeProduct } from "@/lib/types";
 
 // Native BarcodeDetector where available (Chrome on Android, Safari iOS ≥16.4),
@@ -127,6 +128,7 @@ export default function ScanPage() {
         fat_g: Math.round(product.fat_g * m * 10) / 10,
         source: "barcode",
       });
+      track("meal_logged", { source: "barcode" });
       router.replace("/");
     } finally {
       setLogging(false);

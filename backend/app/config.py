@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     sentry_dsn: str = ""
     sentry_environment: str = "production"
 
+    # Admin stats endpoint. If unset, /admin/stats returns 403 (disabled).
+    admin_key: str = ""
+
     def model_post_init(self, __context: object) -> None:
         # Strip whitespace from any env-pasted value. Railway's UI has bitten us
         # repeatedly by preserving trailing newlines on copy-paste — they break
@@ -53,6 +56,7 @@ class Settings(BaseSettings):
             "public_web_url",
             "sentry_dsn",
             "sentry_environment",
+            "admin_key",
         ):
             v = getattr(self, field, None)
             if isinstance(v, str):

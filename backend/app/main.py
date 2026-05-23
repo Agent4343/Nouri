@@ -36,7 +36,7 @@ _sentry_on = _init_sentry()
 from app.auth import get_auth_secret
 from app.cleanup import run_photo_cleanup
 from app.push import get_vapid_keys, run_due_reminders
-from app.routes import auth, barcode, events, meals, photos, profile, push, saved, weights
+from app.routes import admin, auth, barcode, events, meals, photos, profile, push, saved, weights
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -153,3 +153,4 @@ app.include_router(barcode.router, prefix="/barcode", tags=["barcode"])
 app.include_router(push.router, prefix="/push", tags=["push"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(events.router, prefix="/events", tags=["events"])
+app.include_router(admin.router, prefix="/admin", tags=["admin"])
